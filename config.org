@@ -1,0 +1,581 @@
+#+TITLE: Emacs Dotfiles Of Raelon "th3r00t" Masters
+#+AUTHOR: Raelon "th3r00t" Masters
+#+EMAIL: admin@mylt.dev
+https://orgmode.org/manual/Initial-visibility.html
+#+STARTUP: overview
+* Notes
+https://orgmode.org/manual/Structure-Templates.html
+Insert Source Block C-c C-,
+** To Be Installed
+org-journal
+emacs application framework
+mu4e
+projectile
+** Things to map
+magit
+kill ring
+ag
+* Org Mode Configs
+** Org-Roam
+https://www.orgroam.com/manual.html#Getting-Started
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :ensure t)
+  (setq org-roam-directory (file-truename "~/.org-roam"))
+  (org-roam-db-autosync-mode)
+#+end_src
+* Custom Functions
+** Reload Config
+#+begin_src emacs-lisp
+  (defun reload-config ()
+  (interactive)
+  (load-file "~/.emacs.d/init.el"))
+#+end_src
+** Sudo Find File
+#+begin_src emacs-lisp
+  (defun sudo-find-file (file-name)
+  (interactive "Sudo Find File: ")
+  (let ((tramp-file-name (concat "/sudo::" (expand-file-name file-name))))
+    (find-file tramp-file-name)))
+#+end_src
+* Ui Configurations
+Configuration settings that adjust the user experience
+** Window systems -- remove visual cruft
+#+begin_src emacs-lisp
+  (when window-system
+  (tooltip-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1))
+#+end_src
+** Line Numebers
+#+begin_src emacs-lisp
+  (global-display-line-numbers-mode)
+#+end_src
+** Highlight Line
+#+begin_src emacs-lisp
+  (global-hl-line-mode)
+#+end_src
+** AutoPairs
+#+begin_src emacs-lisp
+  (electric-pair-mode)
+#+end_src
+** Rainbow Delimiters
+#+begin_src emacs-lisp
+      (use-package rainbow-delimiters
+        :ensure t)
+#+end_src
+** Rainbow Colors
+#+begin_src emacs-lisp
+    (use-package rainbow-mode
+    :ensure t
+    :config (rainbow-mode 1))
+#+end_src
+** Evil Mode
+https://github.com/emacs-evil/evil-collection
+https://github.com/cofi/evil-leader
+#+begin_src emacs-lisp
+  (setq evil-want-keybinding nil)
+  (use-package evil
+      :ensure t
+      :config
+      (evil-mode 1)
+  (use-package evil-leader
+      :ensure t
+      :config
+      (global-evil-leader-mode t)
+      (evil-leader/set-leader ",")
+  (use-package evil-surround
+      :ensure t
+      :config (global-evil-surround-mode))
+  (use-package evil-indent-textobject
+      :ensure t)
+  (use-package evil-org
+      :ensure t
+      :config
+      (evil-org-set-key-theme
+          '(textobjects insert navigation additional shift todo heading))
+      (add-hook 'org-mode-hook (lambda () (evil-org-mode))))
+  (use-package powerline-evil
+      :ensure t
+      :config
+      (powerline-evil-vim-color-theme))
+  (use-package evil-collection
+    :after evil
+    :ensure t
+    :config
+    (evil-collection-init)))
+  (setq evil-want-fine-undo t)
+  (advice-add 'undo-auto--last-boundary-amalgamating-number
+            :override #'ignore)
+#+end_src
+*** use gv to reselect visual selection after actions
+** Theming
+#+begin_src emacs-lisp
+  (use-package helm-themes
+    :ensure t)
+  (use-package all-the-icons
+    :ensure t)
+  (use-package theme-magic
+    :ensure t)
+  (use-package doom-themes
+  :ensure t
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-nord t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+#+end_src
+** Emacs Startup
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+    (linum-mode -1)
+    (dashboard-setup-startup-hook)
+    (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+    (setq dashboard-items '((recents  . 5)
+		      (bookmarks . 5)
+		      (projects . 5)
+		      (agenda . 5)
+		      (registers . 5)))
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-set-navigator t)
+    (setq dashboard-set-init-info t)
+    (setq dashboard-week-agenda t)
+    (setq dashboard-center-content t)
+    (setq dashboard-startup-banner "/home/raelon/Pictures/Avatars/raelon.gif")
+    ;; Value can be
+    ;; 'official which displays the official emacs logo
+    ;; 'logo which displays an alternative emacs logo
+    ;; 1, 2 or 3 which displays one of the text banners
+    ;; "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt"
+    )
+#+end_src
+* General Configurations
+** Bakup Files
+#+begin_src emacs-lisp
+  (setq
+   backup-by-copying t      ; don't clobber symlinks
+   backup-directory-alist
+   '(("." . "~/.saves"))    ; don't litter my fs tree
+   delete-old-versions t
+   kept-new-versions 6
+   kept-old-versions 2
+   version-control t)       ; use versioned backups
+#+end_src
+** Save Last Position
+#+begin_src emacs-lisp
+  (setq save-place-file "~/.emacs.d/saveplace")
+  (setq-default save-place t)
+#+end_src
+** Remote Editing
+*** Tramp Mode
+https://www.emacswiki.org/emacs/TrampMode
+#+begin_src emacs-lip
+  (setq tramp-default-method "ssh")
+#+end_src
+** Adjust Yank and Paste
+https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-emacs
+#+begin_src emacs-lisp
+  (defun clipboard-yank-my (&rest args)
+  """ wrapper: yank with shifting yanked text to current cursor column """
+  ;; wrapping: https://emacs.stackexchange.com/questions/19215/how-to-write-a-transparent-pass-through-function-wrapper#comment55216_19242)
+  (interactive (advice-eval-interactive-spec
+                (cadr (interactive-form #'clipboard-yank))))
+  
+  (setq point1 (point))
+  (beginning-of-line)
+  (setq pointStart (point))
+  (setq currentColumn (- point1 (point)))
+
+  ;; ORIGINAL 
+  (apply #'clipboard-yank args)
+
+  (newline)
+  ;; (print col)
+  (set-mark-command nil)
+  (goto-char pointStart)
+  (indent-rigidly
+   (region-beginning)
+   (region-end)
+   currentColumn)
+  (goto-char point1) 
+  ;; (setq deactivate-mark nil)
+  )
+#+end_src
+** Follow Symlinks
+#+begin_src emacs-lisp
+  (setq find-file-visit-truename t)
+#+end_src
+* Registers
+#+begin_src emacs-lisp
+  (set-register ?e (cons 'file "~/.emacs.d/"))
+  (set-register ?z (cons 'file "~/.zshrc"))
+#+end_src
+* File Management
+** NeoTree
+https://github.com/jaypei/emacs-neotree
+#+begin_src emacs-lisp
+  (use-package neotree
+    :ensure t
+    :config
+    (setq neo-theme (if (display-graphic-p) 'icons 'arrow)))
+#+end_src
+* Project Management
+** Projectile
+https://projectile.mx/
+#+begin_src emacs-lisp
+    (use-package projectile
+      :ensure t
+      :config
+      (projectile-mode t))
+    (use-package helm-projectile
+      :ensure t)
+#+end_src
+** Magit
+https://magit.vc/
+#+begin_src emacs-lisp
+    (use-package magit
+      :ensure t)
+#+end_src
+* Development Plugins (General)
+** Indent Handling
+#+begin_src emacs-lisp
+  ;;(use-package auto-indent-mode
+  ;;    :ensure t)
+  ;;(auto-indent-global-mode)
+#+end_src
+** Lsp
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+   :hook(
+         (prog-mode . lsp-deferred)
+         (lsp-mode . lsp-enable-which-key-integration))
+   :commands lsp)
+  (use-package lsp-ui :commands lsp-ui-mode)
+  (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+#+end_src
+** DAP
+#+begin_src emacs-lisp
+    (use-package dap-mode
+      :ensure t)
+#+end_src
+* Development Plugins (Languages)
+** Godot Script
+https://github.com/godotengine/emacs-gdscript-mode
+https://langroudi.co.uk/post/emacs_godot_csharp/
+#+begin_src emacs-lisp
+  (use-package gdscript-mode
+    :straight (gdscript-mode
+	       :type git
+	       :host githumagit
+	       :repo "godotengine/emacs-gdscript-mode"))
+  (setq gdscript-godot-executable "/usr/bin/godot-mono")
+#+end_src
+*** Supress unknown notifications
+#+begin_src emacs-lisp
+  (defun lsp--gdscript-ignore-errors (original-function &rest args)
+  "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
+  (if (string-equal major-mode "gdscript-mode")
+      (let ((json-data (nth 0 args)))
+        (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
+                 (not (gethash "id" json-data nil))
+                 (not (gethash "method" json-data nil)))
+            nil ; (message "Method not found")
+          (apply original-function args)))
+    (apply original-function args)))
+;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
+(advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
+#+end_src
+* Completion System
+** Pop-up
+#+begin_src emacs-lisp
+  (use-package popup
+    :ensure t)
+  (use-package popup-complete
+    :ensure t)
+#+end_src
+** Autocomplete
+#+begin_src emacs-lisp
+  (use-package auto-complete
+    :ensure t)
+  (use-package auto-complete-clang-async
+    :ensure t)
+  (use-package auto-complete-exuberant-ctags
+    :ensure t)
+  (use-package auto-complete-c-headers
+    :ensure t)
+  (require 'auto-complete)
+  (require 'auto-complete-config)
+  (ac-config-default)
+#+end_src
+** Company
+https://company-mode.github.io/
+#+begin_src emacs-lisp
+        (use-package company
+          :ensure t
+          :config
+         (add-hook 'after-init-hook 'global-company-mode)
+ )
+#+end_src
+** Helm
+https://github.com/emacs-helm/helm/wiki
+http://tuhdo.github.io/helm-intro.html
+https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
+#+begin_src emacs-lisp
+  (use-package helm
+      :straight t
+      :config
+      (helm-mode 1)
+      (global-set-key (kbd "M-x") #'helm-M-x)
+      (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+      (global-set-key (kbd "C-x C-f") #'helm-find-files)
+      (require 'helm)
+      (require 'helm-config)
+
+    ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+    ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+    ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+    (global-set-key (kbd "C-c h") 'helm-command-prefix)
+    (global-unset-key (kbd "C-x c"))
+
+    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+    (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+    (when (executable-find "curl")
+      (setq helm-google-suggest-use-curl-p t))
+    ;; (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+    ;;       helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+    ;;       helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+    ;;       helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+    ;;       helm-ff-file-name-history-use-recentf t
+    ;;       helm-echo-input-in-header-line t)
+    ;;  (defun spacemacs//helm-hide-minibuffer-maybe ()
+    ;;   "Hide minibuffer in Helm session if we use the header line as input field."
+    ;;   (when (with-helm-buffer helm-echo-input-in-header-line)
+    ;;     (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+    ;;       (overlay-put ov 'window (selected-window))
+    ;;       (overlay-put ov 'face
+    ;;                    (let ((bg-color (face-background 'default nil)))
+    ;;                      `(:background ,bg-color :foreground ,bg-color)))
+    ;;       (setq-local cursor-type nil))))
+    ;; (add-hook 'helm-minibuffer-set-up-hook
+    ;;           'spacemacs//helm-hide-minibuffer-maybe)
+     (setq helm-autoresize-max-height 0)
+     (setq helm-autoresize-min-height 30)
+    ;; (helm-autoresize-mode 1)
+     (setq helm-M-x-fuzzy-match t)
+    ;;     (setq helm-display-function 'helm-display-buffer-in-own-frame
+    ;;           helm-display-buffer-reuse-frame t
+    ;;   helm-use-undecorated-frame-option t)
+    (setq helm-input-idle-delay                     0.01
+            helm-reuse-last-window-split-state        t
+            helm-always-two-windows                   t
+            helm-split-window-inside-p                nil
+            helm-commands-using-frame                 '(completion-at-point
+                                                        helm-apropos
+                                                        helm-eshell-prompts helm-imenu
+                                                        helm-imenu-in-all-buffers)
+            helm-actions-inherit-frame-settings       t
+            helm-use-frame-when-more-than-two-windows t
+            helm-use-frame-when-dedicated-window      t
+            helm-frame-background-color               "DarkSlateGray"
+            helm-show-action-window-other-window      'left
+            helm-allow-mouse                          t
+            helm-move-to-line-cycle-in-source         t
+            helm-autoresize-max-height                80 ; it is %.
+            helm-autoresize-min-height                20 ; it is %.
+            helm-debug-root-directory                 "/home/raelon/tmp/helm-debug"
+            helm-follow-mode-persistent               t
+            helm-candidate-number-limit               500
+            helm-visible-mark-prefix                  "✓")
+    )
+#+end_src
+*** Helm Silver Searcher
+https://github.com/emacsorphanage/helm-ag
+#+begin_src emacs-lisp
+  (use-package helm-ag
+      :ensure t
+      )  
+#+end_src
+
+* Key Bindings
+** Which Key
+https://github.com/justbur/emacs-which-key
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure t
+    :config
+    (which-key-mode))
+#+end_src
+** Bindings
+https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
+#+begin_src emacs-lisp
+  (evil-leader/set-key
+    "b" '("Buffers" . (keymap))
+    "b b" 'helm-buffers-list
+    "f" '("Files" . (keymap))
+    "f f" 'helm-find-files
+    "f s" 'sudo-find-file
+    "k k" 'helm-show-kill-ring
+    "t" '("Toggles" . (keymap))
+    "t f" 'neotree-toggle
+    "t t" 'vterm-toggle
+    "p" '("Projects" . (keymap))
+    "p a" 'projectile-add-known-project
+    "p h" 'helm-projectile
+    "p p" 'projectile-command-map
+    "q" '("Emacs Ops" . (keymap))
+    "q f" 'delete-frame
+    "q q" 'evil-quit
+    "q r" 'reload-config
+    "r" '("Registers" . (keymap))
+    "r r" 'helm-register
+    "T" '("Theming" . (keymap))
+    "T x" 'theme-magic-from-emacs
+    "T T" 'helm-themes
+    "d x w" 'delete-trailing-whitespace))
+#+end_src
+
+* Help System
+
+** Helpfull
+https://github.com/Wilfred/helpful
+#+begin_src emacs-lisp
+  (use-package helpful
+    :ensure t
+    :config
+    (global-set-key (kbd "C-h f") #'helpful-callable)
+    (global-set-key (kbd "C-h v") #'helpful-variable)
+    (global-set-key (kbd "C-h k") #'helpful-key)
+    (global-set-key (kbd "C-c C-.") #'helpful-at-point)
+    (global-set-key (kbd "C-h F") #'helpful-function)
+    (global-set-key (kbd "C-h C") #'helpful-command))
+#+end_src
+* Terminal
+** libvterm
+https://github.com/akermu/emacs-libvterm
+#+begin_src emacs-lisp
+    (use-package vterm
+      :ensure t)
+#+end_src
+** vterm-toggle
+https://github.com/kitnil/emacs-vterm-toggle
+#+begin_src emacs-lisp
+  (use-package vterm-toggle
+    :ensure t)
+#+end_src
+*** Show buffer in bottom side
+#+begin_src emacs-lisp
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+               '("^v?term.*"
+                  (display-buffer-reuse-window display-buffer-at-bottom)
+                  ;;(display-buffer-reuse-window display-buffer-in-direction)
+                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+                  (direction . bottom)
+                  (dedicated . t) ;dedicated is supported in emacs27
+                  (reusable-frames . visible)
+                  (window-height . 0.15)))
+#+end_src
+*** Work with Centaur Tabs
+#+begin_src emacs-lisp
+  (setq centaur-tabs-buffer-groups-function 'vmacs-awesome-tab-buffer-groups)
+  (defun vmacs-awesome-tab-buffer-groups ()
+    "`vmacs-awesome-tab-buffer-groups' control buffers' group rules. "
+    (list
+     (cond
+      ((derived-mode-p 'eshell-mode 'term-mode 'shell-mode 'vterm-mode)
+       "Term")
+      ((string-match-p (rx (or
+                            "\*Helm"
+                            "\*helm"
+                            "\*tramp"
+                            "\*Completions\*"
+                            "\*sdcv\*"
+                            "\*Messages\*"
+                            "\*Ido Completions\*"
+                            ))
+                       (buffer-name))
+       "Emacs")
+      (t "Common"))))
+
+  (setq vterm-toggle--vterm-buffer-p-function 'vmacs-term-mode-p)
+  (defun vmacs-term-mode-p(&optional args)
+    (derived-mode-p 'eshell-mode 'term-mode 'shell-mode 'vterm-mode))
+
+#+end_src
+* Tabs
+** Centaur Tabs
+https://github.com/ema2159/centaur-tabs
+#+begin_src emacs-lisp
+  (use-package centaur-tabs
+    :ensure t
+    :demand
+    :config
+    (centaur-tabs-mode t)
+    (setq centaur-tabs-style "bar")
+    (setq centaur-tabs-height 25)
+    (setq centaur-tabs-plain-icons t)
+    (setq centaur-tabs-set-bar 'over)
+
+    :bind
+    (:map evil-normal-state-map
+	     ("g t" . centaur-tabs-forward)
+	     ("g T" . centaur-tabs-backward)))
+  (defun centaur-tabs-buffer-groups ()
+      "`centaur-tabs-buffer-groups' control buffers' group rules.
+
+    Group centaur-tabs with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
+    All buffer name start with * will group to \"Emacs\".
+    Other buffer group by `centaur-tabs-get-group-name' with project name."
+      (list
+	(cond
+	 ((or (string-equal "*" (substring (buffer-name) 0 1))
+	      (memq major-mode '(magit-process-mode
+				 magit-status-mode
+				 magit-diff-mode
+				 magit-log-mode
+				 magit-file-mode
+				 magit-blob-mode
+				 magit-blame-mode
+				 )))
+	  "Emacs")
+	 ((derived-mode-p 'prog-mode)
+	  "Editing")
+	 ((derived-mode-p 'dired-mode)
+	  "Dired")
+	 ((memq major-mode '(helpful-mode
+			     help-mode))
+	  "Help")
+	 ((memq major-mode '(org-mode
+			     org-agenda-clockreport-mode
+			     org-src-mode
+			     org-agenda-mode
+			     org-beamer-mode
+			     org-indent-mode
+			     org-bullets-mode
+			     org-cdlatex-mode
+			     org-agenda-log-mode
+			     diary-mode))
+	  "OrgMode")
+	 (t
+	  (centaur-tabs-get-group-name (current-buffer))))))
+#+end_src
+
