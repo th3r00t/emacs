@@ -42,11 +42,10 @@ https://www.orgroam.com/manual.html#Getting-Started
 Configuration settings that adjust the user experience
 ** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
-  (when window-system
   (tooltip-mode -1)
   (tool-bar-mode -1)
   (menu-bar-mode -1)
-  (scroll-bar-mode -1))
+  (scroll-bar-mode -1)
 #+end_src
 ** Line Numebers
 #+begin_src emacs-lisp
@@ -164,6 +163,10 @@ https://github.com/cofi/evil-leader
     )
 #+end_src
 * General Configurations
+** Use-Package Configuration
+#+begin_src emacs-lisp
+  (setq use-package-always-ensure t)
+#+end_src
 ** Bakup Files
 #+begin_src emacs-lisp
   (setq
@@ -253,10 +256,39 @@ https://magit.vc/
 * Development Plugins (General)
 ** Indent Handling
 #+begin_src emacs-lisp
-  ;;(use-package auto-indent-mode
-  ;;    :ensure t)
-  ;;(auto-indent-global-mode)
+    ;;(use-package auto-indent-mode
+    ;;    :ensure t)
+    ;;(auto-indent-global-mode)
+    (electric-indent-mode 1)
+    ;;; Indentation for python
+
+    ;; Ignoring electric indentation
+    (defun electric-indent-ignore-python (char)
+    "Ignore electric indentation for python-mode"
+    (if (equal major-mode 'python-mode)
+	'no-indent
+	nil))
+    (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
+
+    ;; Enter key executes newline-and-indent
+    (defun set-newline-and-indent ()
+    "Map the return key with `newline-and-indent'"
+    (local-set-key (kbd "RET") 'newline-and-indent))
+    (add-hook 'python-mode-hook 'set-newline-and-indent)
+    (dolist (command '(yank yank-pop))
+	(eval `(defadvice ,command (after indent-region activate)
+	    (and (not current-prefix-arg)
+		    (member major-mode '(emacs-lisp-mode lisp-mode
+					    clojure-mode    scheme-mode
+					    haskell-mode    ruby-mode
+					    rspec-mode      python-mode
+					    c-mode          c++-mode
+					    objc-mode       latex-mode
+					    plain-tex-mode))
+		    (let ((mark-even-if-inactive transient-mark-mode))
+		(indent-region (region-beginning) (region-end) nil))))))
 #+end_src
+
 ** Lsp
 #+begin_src emacs-lisp
   (use-package lsp-mode
@@ -274,6 +306,23 @@ https://magit.vc/
 #+begin_src emacs-lisp
     (use-package dap-mode
       :ensure t)
+#+end_src
+** Cmake
+#+begin_src emacs-lisp
+  (use-package cmake-project
+  :ensure t)
+  (defun maybe-cmake-project-mode ()
+    (if (or (file-exists-p "CMakeLists.txt")
+	    (file-exists-p (expand-file-name "CMakeLists.txt" (car (project-roots (project-current))))))
+	(cmake-project-mode)))
+
+	(add-hook 'c-mode-hook 'maybe-cmake-project-mode)
+	(add-hook 'c++-mode-hook 'maybe-cmake-project-mode)
+#+end_src
+** FlyMake
+#+begin_src emacs-lisp
+    (use-package flymake
+  :ensure t)
 #+end_src
 * Development Plugins (Languages)
 ** Godot Script
@@ -301,6 +350,17 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
     (apply original-function args)))
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
+#+end_src
+** Csharp
+#+begin_src emacs-lisp
+    (use-package tree-sitter :ensure t)
+    (use-package tree-sitter-langs :ensure t)
+    (use-package tree-sitter-indent :ensure t)
+
+    (use-package csharp-mode
+    :ensure t
+    :config
+    (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode)))
 #+end_src
 * Completion System
 ** Pop-up
@@ -532,8 +592,7 @@ https://github.com/ema2159/centaur-tabs
     (centaur-tabs-mode t)
     (setq centaur-tabs-style "bar")
     (setq centaur-tabs-height 25)
-    (setq centaur-tabs-plain-icons t)
-    (setq centaur-tabs-set-bar 'over)
+    (setq centaur-tabs-plain-icons `t)
 
     :bind
     (:map evil-normal-state-map
