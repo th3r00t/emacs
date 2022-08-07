@@ -40,6 +40,12 @@ https://www.orgroam.com/manual.html#Getting-Started
 #+end_src
 * Ui Configurations
 Configuration settings that adjust the user experience
+** Font
+#+begin_src emacs_lisp
+    (set-frame-font "FiraCode Nerd Font Mono 20" nil t)
+#+end_src
+    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-16" ))
+    (set-face-attribute 'default t :font "FiraCode Nerd Font Mono-16")
 ** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
   (tooltip-mode -1)
@@ -299,8 +305,8 @@ https://magit.vc/
          (prog-mode . lsp-deferred)
          (lsp-mode . lsp-enable-which-key-integration))
    :commands lsp)
-  (use-package lsp-ui :commands lsp-ui-mode)
-  (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+  (use-package lsp-ui :commands lsp-ui-mode :ensure t)
+  (use-package helm-lsp :commands helm-lsp-workspace-symbol :ensure t)
 #+end_src
 ** DAP
 #+begin_src emacs-lisp
@@ -330,9 +336,10 @@ https://github.com/godotengine/emacs-gdscript-mode
 https://langroudi.co.uk/post/emacs_godot_csharp/
 #+begin_src emacs-lisp
   (use-package gdscript-mode
+  :ensure t
     :straight (gdscript-mode
 	       :type git
-	       :host githumagit
+	       :host github
 	       :repo "godotengine/emacs-gdscript-mode"))
   (setq gdscript-godot-executable "/usr/bin/godot-mono")
 #+end_src
@@ -399,6 +406,7 @@ http://tuhdo.github.io/helm-intro.html
 https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
 #+begin_src emacs-lisp
   (use-package helm
+      :ensure t
       :straight t
       :config
       (helm-mode 1)
@@ -445,26 +453,26 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
     ;;           helm-display-buffer-reuse-frame t
     ;;   helm-use-undecorated-frame-option t)
     (setq helm-input-idle-delay                     0.01
-            helm-reuse-last-window-split-state        t
-            helm-always-two-windows                   t
-            helm-split-window-inside-p                nil
-            helm-commands-using-frame                 '(completion-at-point
-                                                        helm-apropos
-                                                        helm-eshell-prompts helm-imenu
-                                                        helm-imenu-in-all-buffers)
-            helm-actions-inherit-frame-settings       t
-            helm-use-frame-when-more-than-two-windows t
-            helm-use-frame-when-dedicated-window      t
-            helm-frame-background-color               "DarkSlateGray"
-            helm-show-action-window-other-window      'left
-            helm-allow-mouse                          t
-            helm-move-to-line-cycle-in-source         t
-            helm-autoresize-max-height                80 ; it is %.
-            helm-autoresize-min-height                20 ; it is %.
-            helm-debug-root-directory                 "/home/raelon/tmp/helm-debug"
-            helm-follow-mode-persistent               t
-            helm-candidate-number-limit               500
-            helm-visible-mark-prefix                  "✓")
+	    helm-reuse-last-window-split-state        t
+	    helm-always-two-windows                   t
+	    helm-split-window-inside-p                nil
+	    helm-commands-using-frame                 '(completion-at-point
+							helm-apropos
+							helm-eshell-prompts helm-imenu
+							helm-imenu-in-all-buffers)
+	    helm-actions-inherit-frame-settings       t
+	    helm-use-frame-when-more-than-two-windows t
+	    helm-use-frame-when-dedicated-window      t
+	    helm-frame-background-color               "DarkSlateGray"
+	    helm-show-action-window-other-window      'left
+	    helm-allow-mouse                          t
+	    helm-move-to-line-cycle-in-source         t
+	    helm-autoresize-max-height                80 ; it is %.
+	    helm-autoresize-min-height                20 ; it is %.
+	    helm-debug-root-directory                 "/home/raelon/tmp/helm-debug"
+	    helm-follow-mode-persistent               t
+	    helm-candidate-number-limit               500
+	    helm-visible-mark-prefix                  "✓")
     )
 #+end_src
 *** Helm Silver Searcher
@@ -553,88 +561,5 @@ https://github.com/kitnil/emacs-vterm-toggle
                   (dedicated . t) ;dedicated is supported in emacs27
                   (reusable-frames . visible)
                   (window-height . 0.15)))
-#+end_src
-*** Work with Centaur Tabs
-#+begin_src emacs-lisp
-  (setq centaur-tabs-buffer-groups-function 'vmacs-awesome-tab-buffer-groups)
-  (defun vmacs-awesome-tab-buffer-groups ()
-    "`vmacs-awesome-tab-buffer-groups' control buffers' group rules. "
-    (list
-     (cond
-      ((derived-mode-p 'eshell-mode 'term-mode 'shell-mode 'vterm-mode)
-       "Term")
-      ((string-match-p (rx (or
-                            "\*Helm"
-                            "\*helm"
-                            "\*tramp"
-                            "\*Completions\*"
-                            "\*sdcv\*"
-                            "\*Messages\*"
-                            "\*Ido Completions\*"
-                            ))
-                       (buffer-name))
-       "Emacs")
-      (t "Common"))))
-
-  (setq vterm-toggle--vterm-buffer-p-function 'vmacs-term-mode-p)
-  (defun vmacs-term-mode-p(&optional args)
-    (derived-mode-p 'eshell-mode 'term-mode 'shell-mode 'vterm-mode))
-
-#+end_src
-* Tabs
-** Centaur Tabs
-https://github.com/ema2159/centaur-tabs
-#+begin_src emacs-lisp
-  (use-package centaur-tabs
-    :ensure t
-    :demand
-    :config
-    (centaur-tabs-mode t)
-    (setq centaur-tabs-style "bar")
-    (setq centaur-tabs-height 25)
-    (setq centaur-tabs-plain-icons `t)
-
-    :bind
-    (:map evil-normal-state-map
-	     ("g t" . centaur-tabs-forward)
-	     ("g T" . centaur-tabs-backward)))
-  (defun centaur-tabs-buffer-groups ()
-      "`centaur-tabs-buffer-groups' control buffers' group rules.
-
-    Group centaur-tabs with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-    All buffer name start with * will group to \"Emacs\".
-    Other buffer group by `centaur-tabs-get-group-name' with project name."
-      (list
-	(cond
-	 ((or (string-equal "*" (substring (buffer-name) 0 1))
-	      (memq major-mode '(magit-process-mode
-				 magit-status-mode
-				 magit-diff-mode
-				 magit-log-mode
-				 magit-file-mode
-				 magit-blob-mode
-				 magit-blame-mode
-				 )))
-	  "Emacs")
-	 ((derived-mode-p 'prog-mode)
-	  "Editing")
-	 ((derived-mode-p 'dired-mode)
-	  "Dired")
-	 ((memq major-mode '(helpful-mode
-			     help-mode))
-	  "Help")
-	 ((memq major-mode '(org-mode
-			     org-agenda-clockreport-mode
-			     org-src-mode
-			     org-agenda-mode
-			     org-beamer-mode
-			     org-indent-mode
-			     org-bullets-mode
-			     org-cdlatex-mode
-			     org-agenda-log-mode
-			     diary-mode))
-	  "OrgMode")
-	 (t
-	  (centaur-tabs-get-group-name (current-buffer))))))
 #+end_src
 
