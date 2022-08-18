@@ -47,20 +47,21 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(display-line-numbers-type t)
- '(font-use-system-font t)
- '(global-display-line-numbers-mode t)
+ '(global-display-line-numbers-mode nil)
  '(helm-M-x-always-save-history t)
  '(helm-default-prompt-display-function 'evil-collection-helm--set-prompt-display)
  '(helm-minibuffer-history-key "M-p")
  '(helm-minibuffer-history-mode t)
  '(helm-mode t)
+ '(org-agenda-files
+   '("/home/th3r00t/org/projects.org" "/home/th3r00t/org/projects.org" "/home/th3r00t/org/journal/20220817"))
  '(package-selected-packages '(## evil use-package))
- '(tool-bar-mode nil)
+ '(send-mail-function 'smtpmail-send-it)
  '(warning-suppress-log-types '((lsp-mode) (lsp-mode)))
- '(warning-suppress-types '((lsp-mode))))
+ '(warning-suppress-types '((comp) (comp) (emacs) (lsp-mode))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#2E3440" :foreground "#ECEFF4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 142 :width normal :foundry "ADBO" :family "FiraCode Nerd Font Mono")))))

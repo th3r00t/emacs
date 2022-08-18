@@ -3,6 +3,9 @@
 #+EMAIL: admin@mylt.dev
 https://orgmode.org/manual/Initial-visibility.html
 #+STARTUP: overview
+#+begin_src emacs-lisp
+  (setq evil-want-keybinding nil)
+#+end_src
 * Notes
 https://orgmode.org/manual/Structure-Templates.html
 Insert Source Block C-c C-,
@@ -16,6 +19,20 @@ magit
 kill ring
 ag
 * Org Mode Configs
+** General
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\.org$" . org-mode))
+(global-set-key (kbd "C-c ;") 'org-store-link)
+(global-set-key (kbd "C-c b") 'org-iswitchb)
+(global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-c c") 'org-capture)
+#+end_src
+** Org-Babel
+#+begin_src emacs-lisp
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t)))
+#+end_src
 ** Org-Roam
 https://www.orgroam.com/manual.html#Getting-Started
 #+begin_src emacs-lisp
@@ -24,7 +41,110 @@ https://www.orgroam.com/manual.html#Getting-Started
   (setq org-roam-directory (file-truename "~/.org-roam"))
   (org-roam-db-autosync-mode)
 #+end_src
+** Org-Projectile
+*** use-package
+#+begin_src emacs-lisp
+    (use-package org-projectile
+    :config
+    (progn
+	(setq org-projectile-projects-file "/home/th3r00t/org/projects.org")
+	(setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+	(setq org-projectile-per-project-filepath "project.org")
+	;; (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+	(global-set-key (kbd "C-c c") 'org-capture)
+	(global-set-key (kbd "C-c t") 'org-projectile-project-todo-completing-read)
+	(global-set-key (kbd "C-c T") 'th3r00t/org-projectile-goto-project-file)
+	(defun th3r00t/org-projectile-todo-files ()
+	"Fetch a list of org TODO files for projects that actually exist."
+	(seq-filter #'file-exists-p (org-projectile-todo-files)))
+	;; Add org-projectile files to org.
+	(setq org-agenda-files (append org-agenda-files (th3r00t/org-projectile-todo-files)))
+	(push (org-projectile-project-todo-entry) org-capture-templates))
+    :ensure t
+  )
+#+end_src
+
+** Org-Evil
+*** use-package
+#+begin_src emacs-lisp
+  (use-package evil-org
+  :ensure t
+  :after org
+  :hook (org-mode . (lambda () evil-org-mode))
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+  (evil-leader/set-key-for-mode 'org-mode
+  "." 'hydra-org-state/body
+  "t" 'org-todo
+  "T" 'org-show-todo-tree
+  "v" 'org-mark-element
+  "a" 'org-agenda
+  "c" 'org-archive-subtree
+  "l" 'evil-org-open-links
+  "C" 'org-resolve-clocks)
+   (defhydra hydra-org-state ()
+     ;; basic navigation
+     ("i" org-cycle)
+     ("I" org-shifttab)
+     ("h" org-up-element)
+     ("l" org-down-element)
+     ("j" org-forward-element)
+     ("k" org-backward-element)
+     ;; navigating links
+     ("n" org-next-link)
+     ("p" org-previous-link)
+     ("o" org-open-at-point)
+     ;; navigation blocks
+     ("N" org-next-block)
+     ("P" org-previous-block)
+     ;; updates
+     ("." org-ctrl-c-ctrl-c)
+     ("*" org-ctrl-c-star)
+     ("-" org-ctrl-c-minus)
+     ;; change todo state
+     ("H" org-shiftleft)
+     ("L" org-shiftright)
+     ("J" org-shiftdown)
+     ("K" org-shiftup)
+     ("t" org-todo))
+#+end_src
+** Org-Journal
+*** use-package
+#+begin_src emacs-lisp
+  (use-package org-journal :ensure t :init (setq org-journal-prefix-key "C-c j "))
+  (setq org-journal-dir "~/org/journal/")
+  (setq org-journal-date-format "%A, %d %B %Y")
+  (setq org-journal-enable-agenda-integration t)
+  (require 'org-journal)
+#+end_src
+** Capture Templates
+*** Journal
+#+begin_src emacs-lisp
+    (defun org-journal-find-location ()
+    ;; Open today's journal, but specify a non-nil prefix argument in order to
+    ;; inhibit inserting the heading; org-capture will insert the heading.
+    (org-journal-new-entry t)
+    (unless (eq org-journal-file-type 'daily)
+      (org-narrow-to-subtree))
+    (goto-char (point-max)))
+
+  (setq org-capture-templates '(("j" "Journal entry" plain (function org-journal-find-location)
+				 "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+				 :jump-to-captured t :immediate-finish t)))
+#+end_src
+**** Future Capture
+#+begin_src emacs-lisp
+  
+#+end_src
 * Custom Functions
+** Org goto project todo
+#+begin_src emacs-lisp
+  (defun th3r00t/org-projectile-goto-project-file ()
+  "Open the TODO.org file for the current project."
+  (interactive)
+  (org-projectile-goto-location-for-project (projectile-project-name)))
+#+end_src
 ** Reload Config
 #+begin_src emacs-lisp
   (defun reload-config ()
@@ -38,19 +158,43 @@ https://www.orgroam.com/manual.html#Getting-Started
   (let ((tramp-file-name (concat "/sudo::" (expand-file-name file-name))))
     (find-file tramp-file-name)))
 #+end_src
+** sidebar-toggle
+#+begin_src emacs-lisp
+  (defun sidebar-toggle ()
+  "Toggle both `dired-sidebar' and `ibuffer-sidebar'."
+  (interactive)
+  (dired-sidebar-toggle-sidebar)
+  (ibuffer-sidebar-toggle-sidebar))
+#+end_src
+** Reload Config
+#+begin_src emacs-lisp
+  (defun reconfigure-emacs ()
+      (org-babel-load-file (expand-file-name "config.org" user-emacs-directory))
+  )
+#+end_src
+
+** Kill Journal Buffer
+#+begin_src emacs-lisp
+#+end_src
 * Ui Configurations
 Configuration settings that adjust the user experience
+** Hydra
+*** use-package
+#+begin_src emacs-lisp
+  (use-package hydra :ensure t :config (require 'hydra))
+#+end_src
+
 ** Font
 #+begin_src emacs_lisp
     (set-frame-font "FiraCode Nerd Font Mono 20" nil t)
+    (set-default-font "FiraCode Nerd Font Mono 20" nil t)
+    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-20" ))
 #+end_src
-    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-16" ))
-    (set-face-attribute 'default t :font "FiraCode Nerd Font Mono-16")
 ** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
-  (tooltip-mode -1)
-  (tool-bar-mode -1)
-  (menu-bar-mode -1)
+  (tooltip-mode 1)
+  (tool-bar-mode 1)
+  (menu-bar-mode 1)
   (scroll-bar-mode -1)
 #+end_src
 ** Line Numebers
@@ -123,13 +267,22 @@ https://github.com/cofi/evil-leader
     :ensure t)
   (use-package theme-magic
     :ensure t)
+  (use-package afternoon-theme
+  :ensure t)
+  (use-package ample-theme
+  :init (progn (load-theme 'ample t t)
+	       (load-theme 'ample-flat t t)
+	       (load-theme 'ample-light t t)
+	       (enable-theme 'ample-flat))
+  :defer t
+  :ensure t)
   (use-package doom-themes
   :ensure t
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-nord t)
+	doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;;(load-theme 'doom-nord t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -140,6 +293,7 @@ https://github.com/cofi/evil-leader
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
+  (load-theme 'afternoon t)
 #+end_src
 ** Emacs Startup
 #+begin_src emacs-lisp
@@ -160,7 +314,7 @@ https://github.com/cofi/evil-leader
     (setq dashboard-set-init-info t)
     (setq dashboard-week-agenda t)
     (setq dashboard-center-content t)
-    (setq dashboard-startup-banner "/home/raelon/Pictures/Avatars/raelon.gif")
+    (setq dashboard-startup-banner "/home/th3r00t/Pictures/Avatars/th3r00tahi.png")
     ;; Value can be
     ;; 'official which displays the official emacs logo
     ;; 'logo which displays an alternative emacs logo
@@ -168,7 +322,76 @@ https://github.com/cofi/evil-leader
     ;; "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt"
     )
 #+end_src
+** iBuffer
+#+begin_src emacs-lisp
+  (setq ibuffer-saved-filter-groups
+	  (quote (("default"
+		   ("dired" (mode . dired-mode))
+		   ("perl" (mode . cperl-mode))
+		   ("erc" (mode . erc-mode))
+		   ("planner" (or
+			       (name . "^\\*Calendar\\*$")
+			       (name . "^diary$")
+			       (mode . muse-mode)))
+		   ("emacs" (or
+			     (name . "^\\*scratch\\*$")
+			     (name . "^\\*Messages\\*$")))
+		   ("svg" (name . "\\.svg")) ; group by file extension
+		   ("gnus" (or
+			    (mode . message-mode)
+			    (mode . bbdb-mode)
+			    (mode . mail-mode)
+			    (mode . gnus-group-mode)
+			    (mode . gnus-summary-mode)
+			    (mode . gnus-article-mode)
+			    (name . "^\\.bbdb$")
+			    (name . "^\\.newsrc-dribble")))))))
+      (add-hook 'ibuffer-mode-hook
+	      (lambda ()
+		(ibuffer-switch-to-saved-filter-groups "default")))
+    (defadvice ibuffer-update-title-and-summary (after remove-column-titles)
+   (save-excursion
+      (with-current-buffer "*Ibuffer*")
+      (read-only-mode 0)
+      (goto-char 1)
+      (search-forward "-\n" nil t)
+      (delete-region 1 (point))
+      (let ((window-min-height 1)) 
+	;; save a little screen estate
+	(shrink-window-if-larger-than-buffer))
+      (read-only-mode 1)))
+
+  (ad-activate 'ibuffer-update-title-and-summary)
+  (use-package ibuffer-vc :ensure t)
+  (use-package ibuffer-sidebar :ensure t)
+  (use-package ibuffer-tramp :ensure t)
+  (use-package ibuffer-projectile :ensure t)
+#+end_src
+** Dired
+#+begin_src emacs-lisp
+(use-package dired-sidebar
+    :ensure t
+    :init
+	(add-hook 'dired-sidebar-mode-hook
+	(lambda()
+	(unless (file-remote-p default-directory)
+	(auto-revert-mode))))
+    :config
+    (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
+    (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
+    (setq dired-sidebar-subtree-line-prefix "__")
+    (setq dired-sidebar-theme 'vscode)
+    (setq dired-sidebar-use-term-integration t)
+    (setq dired-sidebar-use-custom-font t)
+)
+#+end_src
 * General Configurations
+** Default Overrides
+*** yes-no
+**** 
+#+begin_src emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
 ** Use-Package Configuration
 #+begin_src emacs-lisp
   (setq use-package-always-ensure t)
@@ -256,8 +479,7 @@ https://projectile.mx/
 ** Magit
 https://magit.vc/
 #+begin_src emacs-lisp
-    (use-package magit
-      :ensure t)
+    (use-package magit :ensure t)
 #+end_src
 * Development Plugins (General)
 ** Indent Handling
@@ -330,6 +552,10 @@ https://magit.vc/
     (use-package flymake
   :ensure t)
 #+end_src
+** Flycheck
+#+begin_src emacs-lisp
+  (use-package flycheck :ensure t :init (global-flycheck-mode t))
+#+end_src
 * Development Plugins (Languages)
 ** Godot Script
 https://github.com/godotengine/emacs-gdscript-mode
@@ -368,6 +594,11 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
     :ensure t
     :config
     (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode)))
+#+end_src
+** C++
+#+begin_src emacs-lisp
+  (use-package yasnippet-snippets :ensure t :config (require 'yasnippet)(yas-global-mode 1))
+  (use-package modern-cpp-font-lock :ensure t)
 #+end_src
 * Completion System
 ** Pop-up
@@ -410,70 +641,48 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
       :straight t
       :config
       (helm-mode 1)
-      (global-set-key (kbd "M-x") #'helm-M-x)
-      (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
-      (global-set-key (kbd "C-x C-f") #'helm-find-files)
-      (require 'helm)
-      (require 'helm-config)
-
-    ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-    ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-    ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-    (global-set-key (kbd "C-c h") 'helm-command-prefix)
-    (global-unset-key (kbd "C-x c"))
-
-    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-    (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-
-    (when (executable-find "curl")
-      (setq helm-google-suggest-use-curl-p t))
-    ;; (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
-    ;;       helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
-    ;;       helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-    ;;       helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-    ;;       helm-ff-file-name-history-use-recentf t
-    ;;       helm-echo-input-in-header-line t)
-    ;;  (defun spacemacs//helm-hide-minibuffer-maybe ()
-    ;;   "Hide minibuffer in Helm session if we use the header line as input field."
-    ;;   (when (with-helm-buffer helm-echo-input-in-header-line)
-    ;;     (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
-    ;;       (overlay-put ov 'window (selected-window))
-    ;;       (overlay-put ov 'face
-    ;;                    (let ((bg-color (face-background 'default nil)))
-    ;;                      `(:background ,bg-color :foreground ,bg-color)))
-    ;;       (setq-local cursor-type nil))))
-    ;; (add-hook 'helm-minibuffer-set-up-hook
-    ;;           'spacemacs//helm-hide-minibuffer-maybe)
-     (setq helm-autoresize-max-height 0)
-     (setq helm-autoresize-min-height 30)
-    ;; (helm-autoresize-mode 1)
-     (setq helm-M-x-fuzzy-match t)
-    ;;     (setq helm-display-function 'helm-display-buffer-in-own-frame
-    ;;           helm-display-buffer-reuse-frame t
-    ;;   helm-use-undecorated-frame-option t)
-    (setq helm-input-idle-delay                     0.01
-	    helm-reuse-last-window-split-state        t
-	    helm-always-two-windows                   t
-	    helm-split-window-inside-p                nil
-	    helm-commands-using-frame                 '(completion-at-point
-							helm-apropos
-							helm-eshell-prompts helm-imenu
-							helm-imenu-in-all-buffers)
-	    helm-actions-inherit-frame-settings       t
-	    helm-use-frame-when-more-than-two-windows t
-	    helm-use-frame-when-dedicated-window      t
-	    helm-frame-background-color               "DarkSlateGray"
-	    helm-show-action-window-other-window      'left
-	    helm-allow-mouse                          t
-	    helm-move-to-line-cycle-in-source         t
-	    helm-autoresize-max-height                80 ; it is %.
-	    helm-autoresize-min-height                20 ; it is %.
-	    helm-debug-root-directory                 "/home/raelon/tmp/helm-debug"
-	    helm-follow-mode-persistent               t
-	    helm-candidate-number-limit               500
-	    helm-visible-mark-prefix                  "✓")
     )
+    (global-set-key (kbd "M-x") #'helm-M-x)
+    (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+    (global-set-key (kbd "C-x C-f") #'helm-find-files)
+    (require 'helm)
+    (require 'helm-config)
+
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+(setq helm-M-x-fuzzy-match t)
+;;(setq helm-display-function 'helm-display-buffer-in-own-frame helm-display-buffer-reuse-frame t)
+(setq helm-input-idle-delay                     0.01
+    helm-reuse-last-window-split-state        t
+    helm-always-two-windows                   t
+    helm-split-window-inside-p                t
+    helm-commands-using-frame                 '(completion-at-point helm-apropos helm-eshell-prompts helm-imenu helm-imenu-in-all-buffers)
+    helm-actions-inherit-frame-settings       t
+    helm-use-frame-when-more-than-two-windows nil
+    helm-use-frame-when-dedicated-window      nil
+    helm-frame-background-color               "DarkSlateGray"
+    helm-show-action-window-other-window      'left
+    helm-allow-mouse                          t
+    helm-move-to-line-cycle-in-source         t
+    helm-autoresize-max-height                40 ; it is %.
+    helm-autoresize-min-height                20 ; it is %.
+    helm-autoresize-mode 1
+    helm-debug-root-directory                 "/home/th3r00t/tmp/helm-debug"
+    helm-follow-mode-persistent               t
+    helm-candidate-number-limit               500
+    helm-visible-mark-prefix                  "✓"
+    helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+    helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+    helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+    helm-ff-file-name-history-use-recentf t
+    helm-echo-input-in-header-line t)
+(when (executable-find "curl") (setq helm-google-suggest-use-curl-p t))
 #+end_src
 *** Helm Silver Searcher
 https://github.com/emacsorphanage/helm-ag
@@ -495,9 +704,12 @@ https://github.com/justbur/emacs-which-key
 ** Bindings
 https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
 #+begin_src emacs-lisp
+  (global-set-key [C-tab] 'sidebar-toggle)
   (evil-leader/set-key
     "b" '("Buffers" . (keymap))
     "b b" 'helm-buffers-list
+    "b n" 'next-buffer
+    "b p" 'previous-buffer
     "f" '("Files" . (keymap))
     "f f" 'helm-find-files
     "f s" 'sudo-find-file
@@ -505,6 +717,12 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     "t" '("Toggles" . (keymap))
     "t f" 'neotree-toggle
     "t t" 'vterm-toggle
+    "t T" 'tool-bar-mode
+    "t M" 'menu-bar-mode
+    "t s" 'lsp-treemacs-symbols
+    "t n" 'linum-mode
+    "o" '("Org" . (keymap))
+    "o t" 'todo-show
     "p" '("Projects" . (keymap))
     "p a" 'projectile-add-known-project
     "p h" 'helm-projectile
@@ -515,11 +733,18 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     "q r" 'reload-config
     "r" '("Registers" . (keymap))
     "r r" 'helm-register
+    "TAB" '("Tabs" . (keymap))
+    "TAB TAB" 'tab-new
+    "TAB n" 'tab-next
+    "TAB p" 'tab-previous
+    "TAB l" 'tab-list
     "T" '("Theming" . (keymap))
     "T x" 'theme-magic-from-emacs
     "T T" 'helm-themes
     "d x w" 'delete-trailing-whitespace))
 #+end_src
+
+#+RESULTS:
 
 * Help System
 
@@ -563,3 +788,184 @@ https://github.com/kitnil/emacs-vterm-toggle
                   (window-height . 0.15)))
 #+end_src
 
+* MU4E
+#+begin_src emacs-lisp
+  (require 'mu4e)
+#+end_src
+** Multiple Account Configuration  
+#+begin_src emacs-lisp
+;; assumed Maildir layout
+;; ~/Maildir/Account0/{Inbox,Sent,Trash}
+;; ~/Maildir/Account1/{Inbox,Sent,Trash}
+;; where Account0 is context name
+(defun my-make-mu4e-context (context-name full-name mail-address signature)
+"Return a mu4e context named CONTEXT-NAME with :match-func matching
+folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
+`user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
+FULL-NAME and SIGNATURE respectively.
+Special folders are set to context specific folders."
+(let ((dir-name (concat "/" context-name)))
+    (make-mu4e-context
+    :name context-name
+    ;; we match based on the maildir of the message
+    ;; this matches maildir /Arkham and its sub-directories
+    :match-func
+    `(lambda (msg)
+	(when msg
+	(string-match-p
+	,(concat "^" dir-name)
+	(mu4e-message-field msg :maildir))))
+    :vars
+    `((user-mail-address    . ,mail-address)
+	(user-full-name       . ,full-name)
+	(mu4e-sent-folder     . ,(concat dir-name "/Sent"))
+	(mu4e-drafts-folder   . ,(concat dir-name "/Drafts"))
+	(mu4e-trash-folder    . ,(concat dir-name "/Trash"))
+	(mu4e-refile-folder   . ,(concat dir-name "/Archive"))
+	(mu4e-compose-signature . ,signature)))))
+;;Fixing duplicate UID errors when using mbsync and mu4e
+(setq mu4e-change-filenames-when-moving t)
+(setq mu4e-contexts
+    `(,(my-make-mu4e-context
+	"admin" "Raelon 'th3r00t' Masters" "admin@mylt.dev" "<a href=home.mylt.dev>th3r00t</a>"
+	)))
+#+end_src
+
+#+RESULTS:
+: t
+
+** mbsync integration
+#+begin_src emacs-lisp
+  (setq mu4e-get-mail-command "mbsync -a")
+  ;; Most of the time, I merely want mu4e to re-index my local maildir (because
+    ;; I'm running mbsync as a cron job). However, sometimes I want to fetch mails
+    ;; immediately. Do this by changing the meaning of a prefix for
+    ;; mu4e-update-mail-and-index (bound to "U").
+    ;;
+    ;; A prefix usually means run in the background, but I don't think I ever want
+    ;; that. Change things so a prefix means to call mbsync.
+    (defun th3r00t/mu4e-update-mail-and-index (orig-fun prefix &rest args)
+      (interactive "P")
+      (if prefix (funcall orig-fun nil) (mu4e-update-index)))
+      (advice-add 'mu4e-update-mail-and-index
+		:around #'th3r00t/mu4e-update-mail-and-index)
+  ;;Fixing duplicate UID errors when using mbsync and mu4e
+    (setq mu4e-change-filenames-when-moving t)
+#+end_src
+
+** mu4e-alert
+#+begin_src emacs-lisp
+  (use-package mu4e-alert
+  :ensure t
+  :after mu4e
+  :init
+  (setq mu4e-alert-interesting-mail-query
+    (concat
+     "flag:unread maildir:/admin@mylt.dev/inbox "
+     ))
+  (mu4e-alert-enable-mode-line-display)
+  (defun gjstein-refresh-mu4e-alert-mode-line ()
+    (interactive)
+    (mu4e-kill-update-mail)
+    (mu4e-alert-enable-mode-line-display)
+    )
+  (run-with-timer 0 60 'gjstein-refresh-mu4e-alert-mode-line)
+  )
+#+end_src
+Alert for multiple email accounts
+#+begin_src 
+  (setq mu4e-alert-interesting-mail-query
+    (concat
+     "flag:unread maildir:/admin@mylt.dev/inbox "
+     "or "
+     "flag:unread maildir:/gmail/inbox"
+     ))
+#+end_src
+** sending mail
+#+begin_src emacs-lisp
+  ;; I have my "default" parameters from Gmail
+(setq mu4e-sent-folder "/home/th3r00t/.local/share/mail/admin/Sent"
+      ;; mu4e-sent-messages-behavior 'delete ;; Unsure how this should be configured
+      mu4e-drafts-folder "/home/th3r00t/.local/share/mail/admin/Drafts"
+      user-mail-address "admin@mylt.dev"
+      smtpmail-default-smtp-server "smtp.office365.com"
+      smtpmail-smtp-server "smtp.office365.com"
+      smtpmail-smtp-service 587)
+
+;; Now I set a list of 
+(defvar my-mu4e-account-alist
+  '(("Admin"
+     (mu4e-sent-folder "/admin/Sent")
+     (user-mail-address "admin@mylt.dev")
+     (smtpmail-smtp-user "admin@mylt.dev")
+     (smtpmail-local-domain "mylt.dev")
+     (smtpmail-default-smtp-server "smtp.office365.com")
+     (smtpmail-smtp-server "smtp.office365.com")
+     (smtpmail-smtp-service 587)
+     )
+     ;; Include any other accounts here ...
+    ))
+
+(defun my-mu4e-set-account ()
+  "Set the account for composing a message.
+   This function is taken from: 
+     https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
+  (let* ((account
+    (if mu4e-compose-parent-message
+        (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
+    (string-match "/\\(.*?\\)/" maildir)
+    (match-string 1 maildir))
+      (completing-read (format "Compose with account: (%s) "
+             (mapconcat #'(lambda (var) (car var))
+            my-mu4e-account-alist "/"))
+           (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
+           nil t nil nil (caar my-mu4e-account-alist))))
+   (account-vars (cdr (assoc account my-mu4e-account-alist))))
+    (if account-vars
+  (mapc #'(lambda (var)
+      (set (car var) (cadr var)))
+        account-vars)
+      (error "No email account found"))))
+(add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
+#+end_src
+** Avoid trash on delete
+#+begin_src
+  (defun remove-nth-element (nth list)
+  (if (zerop nth) (cdr list)
+    (let ((last (nthcdr (1- nth) list)))
+      (setcdr last (cddr last))
+      list)))
+(setq mu4e-marks (remove-nth-element 5 mu4e-marks))
+(add-to-list 'mu4e-marks
+     '(trash
+       :char ("d" . "▼")
+       :prompt "dtrash"
+       :dyn-target (lambda (target msg) (mu4e-get-trash-folder msg))
+       :action (lambda (docid msg target) 
+                 (mu4e~proc-move docid
+                    (mu4e~mark-check-target target) "-N"))))
+#+end_src
+** Random Tweaks
+#+begin_src emacs-lisp
+  ;; This allows me to use 'helm' to select mailboxes
+(setq mu4e-completing-read-function 'completing-read)
+;; Why would I want to leave my message open after I've sent it?
+(setq message-kill-buffer-on-exit t)
+;; Don't ask for a 'context' upon opening mu4e
+(setq mu4e-context-policy 'pick-first)
+;; Don't ask to quit... why is this the default?
+(setq mu4e-confirm-quit nil)
+#+end_src
+
+* Reddit
+#+begin_src emacs-lisp
+  (use-package md4rd :ensure t
+      :config
+	(add-hook 'md4rd-mode-hook 'md4rd-indent-all-the-lines)
+	  (setq md4rd-subs-active '(emacs lisp+Common_Lisp prolog clojure))
+	   (setq md4rd--oauth-access-token
+	  "dK7qKMb50RaIIYLYi_tM2tKMZ5Be7g")
+    (setq md4rd--oauth-refresh-token
+	  "dK7qKMb50RaIIYLYi_tM2tKMZ5Be7g")
+    (run-with-timer 0 3540 'md4rd-refresh-login))
+#+end_src
