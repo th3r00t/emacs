@@ -47,6 +47,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(display-line-numbers-type t)
+ '(eaf-browser-blank-page-url "https://home.mylt.dev")
+ '(eaf-browser-default-search-engine "duckduckgo")
+ '(eaf-browser-enable-autofill t)
+ '(evil-undo-system 'undo-tree)
  '(global-display-line-numbers-mode nil)
  '(helm-M-x-always-save-history t)
  '(helm-default-prompt-display-function 'evil-collection-helm--set-prompt-display)
@@ -56,9 +60,18 @@
  '(org-agenda-files
    '("/home/th3r00t/org/projects.org" "/home/th3r00t/org/projects.org" "/home/th3r00t/org/journal/20220817"))
  '(package-selected-packages '(## evil use-package))
+ '(safe-local-variable-values
+   '((company-clang-arguments "-I/home/th3r00t/.local/builds/DungeonsOfDespair/src")))
  '(send-mail-function 'smtpmail-send-it)
  '(warning-suppress-log-types '((lsp-mode) (lsp-mode)))
- '(warning-suppress-types '((comp) (comp) (emacs) (lsp-mode))))
+ '(warning-suppress-types
+   '((emacs)
+     (use-package)
+     (use-package)
+     (comp)
+     (comp)
+     (emacs)
+     (lsp-mode))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

@@ -21,93 +21,105 @@ ag
 * Org Mode Configs
 ** General
 #+begin_src emacs-lisp
-(add-to-list 'auto-mode-alist '("\.org$" . org-mode))
-(global-set-key (kbd "C-c ;") 'org-store-link)
-(global-set-key (kbd "C-c b") 'org-iswitchb)
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c c") 'org-capture)
+  (add-to-list 'auto-mode-alist '("\.org$" . org-mode))
+  (global-set-key (kbd "C-c ;") 'org-store-link)
+  (global-set-key (kbd "C-c b") 'org-iswitchb)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "C-c c") 'org-capture)
 #+end_src
 ** Org-Babel
 #+begin_src emacs-lisp
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((python . t)))
+  (require 'ob-js)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t) (C . t) (shell . t) (sql . t) (emacs-lisp . t) (sqlite . t) (R . t)))
+  (add-to-list 'org-babel-tangle-lang-exts '("js" . "js"))
 #+end_src
 ** Org-Roam
 https://www.orgroam.com/manual.html#Getting-Started
+*** install
 #+begin_src emacs-lisp
   (use-package org-roam
-    :ensure t)
-  (setq org-roam-directory (file-truename "~/.org-roam"))
-  (org-roam-db-autosync-mode)
+    :ensure t
+    :demand t
+    :config
+    (setq org-roam-directory (file-truename "~/org/.org-roam"))
+    (org-roam-db-autosync-mode))
+#+end_src
+
+#+RESULTS:
+: t
+
+*** config
+#+begin_src emacs-lisp
 #+end_src
 ** Org-Projectile
 *** use-package
 #+begin_src emacs-lisp
-    (use-package org-projectile
+  (use-package org-projectile
     :config
     (progn
-	(setq org-projectile-projects-file "/home/th3r00t/org/projects.org")
-	(setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-	(setq org-projectile-per-project-filepath "project.org")
-	;; (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-	(global-set-key (kbd "C-c c") 'org-capture)
-	(global-set-key (kbd "C-c t") 'org-projectile-project-todo-completing-read)
-	(global-set-key (kbd "C-c T") 'th3r00t/org-projectile-goto-project-file)
-	(defun th3r00t/org-projectile-todo-files ()
+      (setq org-projectile-projects-file "/home/th3r00t/org/projects.org")
+      (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+      (setq org-projectile-per-project-filepath "project.org")
+      ;; (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+      (global-set-key (kbd "C-c c") 'org-capture)
+      (global-set-key (kbd "C-c t") 'org-projectile-project-todo-completing-read)
+      (global-set-key (kbd "C-c T") 'my/org-projectile-goto-project-file)
+      (defun my/org-projectile-todo-files ()
 	"Fetch a list of org TODO files for projects that actually exist."
 	(seq-filter #'file-exists-p (org-projectile-todo-files)))
-	;; Add org-projectile files to org.
-	(setq org-agenda-files (append org-agenda-files (th3r00t/org-projectile-todo-files)))
-	(push (org-projectile-project-todo-entry) org-capture-templates))
+      ;; Add org-projectile files to org.
+      (setq org-agenda-files (append org-agenda-files (my/org-projectile-todo-files)))
+      (push (org-projectile-project-todo-entry) org-capture-templates))
     :ensure t
-  )
+    )
 #+end_src
 
 ** Org-Evil
 *** use-package
 #+begin_src emacs-lisp
   (use-package evil-org
-  :ensure t
-  :after org
-  :hook (org-mode . (lambda () evil-org-mode))
-  :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
+    :ensure t
+    :after org
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
   (evil-leader/set-key-for-mode 'org-mode
-  "." 'hydra-org-state/body
-  "t" 'org-todo
-  "T" 'org-show-todo-tree
-  "v" 'org-mark-element
-  "a" 'org-agenda
-  "c" 'org-archive-subtree
-  "l" 'evil-org-open-links
-  "C" 'org-resolve-clocks)
-   (defhydra hydra-org-state ()
-     ;; basic navigation
-     ("i" org-cycle)
-     ("I" org-shifttab)
-     ("h" org-up-element)
-     ("l" org-down-element)
-     ("j" org-forward-element)
-     ("k" org-backward-element)
-     ;; navigating links
-     ("n" org-next-link)
-     ("p" org-previous-link)
-     ("o" org-open-at-point)
-     ;; navigation blocks
-     ("N" org-next-block)
-     ("P" org-previous-block)
-     ;; updates
-     ("." org-ctrl-c-ctrl-c)
-     ("*" org-ctrl-c-star)
-     ("-" org-ctrl-c-minus)
-     ;; change todo state
-     ("H" org-shiftleft)
-     ("L" org-shiftright)
-     ("J" org-shiftdown)
-     ("K" org-shiftup)
-     ("t" org-todo))
+    "." 'hydra-org-state/body
+    "t" 'org-todo
+    "T" 'org-show-todo-tree
+    "v" 'org-mark-element
+    "a" 'org-agenda
+    "c" 'org-archive-subtree
+    "l" 'evil-org-open-links
+    "C" 'org-resolve-clocks)
+  (defhydra hydra-org-state ()
+    ;; basic navigation
+    ("i" org-cycle)
+    ("I" org-shifttab)
+    ("h" org-up-element)
+    ("l" org-down-element)
+    ("j" org-forward-element)
+    ("k" org-backward-element)
+    ;; navigating links
+    ("n" org-next-link)
+    ("p" org-previous-link)
+    ("o" org-open-at-point)
+    ;; navigation blocks
+    ("N" org-next-block)
+    ("P" org-previous-block)
+    ;; updates
+    ("." org-ctrl-c-ctrl-c)
+    ("*" org-ctrl-c-star)
+    ("-" org-ctrl-c-minus)
+    ;; change todo state
+    ("H" org-shiftleft)
+    ("L" org-shiftright)
+    ("J" org-shiftdown)
+    ("K" org-shiftup)
+    ("t" org-todo))
 #+end_src
 ** Org-Journal
 *** use-package
@@ -121,7 +133,7 @@ https://www.orgroam.com/manual.html#Getting-Started
 ** Capture Templates
 *** Journal
 #+begin_src emacs-lisp
-    (defun org-journal-find-location ()
+  (defun org-journal-find-location ()
     ;; Open today's journal, but specify a non-nil prefix argument in order to
     ;; inhibit inserting the heading; org-capture will insert the heading.
     (org-journal-new-entry t)
@@ -133,6 +145,32 @@ https://www.orgroam.com/manual.html#Getting-Started
 				 "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
 				 :jump-to-captured t :immediate-finish t)))
 #+end_src
+*** Org roam capture
+#+begin_src emacs-lisp
+  (setq org-roam-capture-templates
+	'(("d" "default" plain
+	   "%?"
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n")
+	   :unnarrowed t)
+	  ("l" "programming language" plain
+	   "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+	   :unnarrowed t)
+
+	  ("b" "book notes" plain
+	   "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+	   :unnarrowed t)
+
+	  ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+	   :unnarrowed t)
+	  ))
+#+end_src
+
+#+RESULTS:
+| d | default | plain | %? | :if-new | (file+head %<%Y%m%d%H%M%S>-${slug}.org #+title: ${title} |
+
 **** Future Capture
 #+begin_src emacs-lisp
   
@@ -140,41 +178,227 @@ https://www.orgroam.com/manual.html#Getting-Started
 * Custom Functions
 ** Org goto project todo
 #+begin_src emacs-lisp
-  (defun th3r00t/org-projectile-goto-project-file ()
-  "Open the TODO.org file for the current project."
-  (interactive)
-  (org-projectile-goto-location-for-project (projectile-project-name)))
+  (defun my/org-projectile-goto-project-file ()
+    "Open the TODO.org file for the current project."
+    (interactive)
+    (org-projectile-goto-location-for-project (projectile-project-name)))
 #+end_src
+** org-roam-node-insert-immediate
+#+begin_src emacs-lisp
+  (defun org-roam-node-insert-immediate (arg &rest args)
+    (interactive "P")
+    (let ((args (cons arg args))
+	  (org-roam-capture-template (list (append (car org-roam-capture-templates)'(:immediate-finish t)))))
+      (apply #'org-roam-node-insert args))) 
+#+end_src
+
+#+RESULTS:
+: org-roam-node-insert-immediate
+
 ** Reload Config
 #+begin_src emacs-lisp
   (defun reload-config ()
-  (interactive)
-  (load-file "~/.emacs.d/init.el"))
+    (interactive)
+    (load-file "~/.emacs.d/init.el"))
 #+end_src
 ** Sudo Find File
 #+begin_src emacs-lisp
   (defun sudo-find-file (file-name)
-  (interactive "Sudo Find File: ")
-  (let ((tramp-file-name (concat "/sudo::" (expand-file-name file-name))))
-    (find-file tramp-file-name)))
+    (interactive "Sudo Find File: ")
+    (let ((tramp-file-name (concat "/sudo::" (expand-file-name file-name))))
+      (find-file tramp-file-name)))
 #+end_src
 ** sidebar-toggle
 #+begin_src emacs-lisp
   (defun sidebar-toggle ()
-  "Toggle both `dired-sidebar' and `ibuffer-sidebar'."
-  (interactive)
-  (dired-sidebar-toggle-sidebar)
-  (ibuffer-sidebar-toggle-sidebar))
+    "Toggle both `dired-sidebar' and `ibuffer-sidebar'."
+    (interactive)
+    (dired-sidebar-toggle-sidebar)
+    (ibuffer-sidebar-toggle-sidebar))
 #+end_src
 ** Reload Config
 #+begin_src emacs-lisp
   (defun reconfigure-emacs ()
-      (org-babel-load-file (expand-file-name "config.org" user-emacs-directory))
-  )
+    (org-babel-load-file (expand-file-name "config.org" user-emacs-directory))
+    )
 #+end_src
 
 ** Kill Journal Buffer
 #+begin_src emacs-lisp
+#+end_src
+** helm/functions
+*** helm/eselect-grep
+#+begin_src emacs-lisp
+  (defun helm/eselect-grep ()
+    (interactive)
+    (when (y-or-n-p (format "Current grep program is %s, switching? "
+			    (helm-grep-command)))
+      (if (helm-grep-use-ack-p)
+	  (setq helm-grep-default-command
+		"grep --color=always -d skip %e -n%cH -e %p %f"
+		helm-grep-default-recurse-command
+		"grep --color=always -d recurse %e -n%cH -e %p %f")
+	(setq helm-grep-default-command
+	      "ack-grep -Hn --color --smart-case --no-group %e %p %f"
+	      helm-grep-default-recurse-command
+	      "ack-grep -H --color --smart-case --no-group %e %p %f"))
+      (message "Switched to %s" (helm-grep-command))))
+
+#+end_src
+*** helm/turn-on-header-line
+#+begin_src emacs-lisp
+  (defun helm/turn-on-header-line ()
+    (interactive)
+    (setq helm-echo-input-in-header-line t)
+    (setq helm-split-window-in-side-p t)
+    (helm-autoresize-mode -1)
+    (add-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)
+    )
+#+end_src
+*** helm/turn-off-header-line
+#+begin_src emacs-lisp
+  (defun helm/turn-off-header-line ()
+    (interactive)
+    (setq helm-echo-input-in-header-line nil)
+    ;;(helm-autoresize-mode 1)
+    (setq helm-split-window-in-side-p nil)
+    (remove-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)
+    )
+#+end_src
+*** helm/occur-which-func
+#+begin_src emacs-lisp
+  (defun helm/occur-which-func ()
+    (interactive)
+    (with-current-buffer
+	(or (helm-aif (with-helm-buffer
+			(window-buffer helm-persistent-action-display-window))
+		(and (null (minibufferp it)) it))
+	    helm-current-buffer)
+      (when (eq major-mode 'emacs-lisp-mode)
+	(message "[%s]" (which-function)))))
+#+end_src
+*** helm-find-files-in-frame
+#+begin_src emacs-lisp
+  (defun helm-find-files-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-find-files)))
+#+end_src
+*** helm-M-x-in-frame
+#+begin_src emacs-lisp
+  (defun helm-M-x-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-M-x)))
+#+end_src
+*** helm-occur-in-frame
+#+begin_src emacs-lisp
+  (defun helm-occur-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-occur)))
+#+end_src
+*** helm-mini-in-frame
+#+begin_src emacs-lisp
+  (defun helm-mini-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-mini)))
+#+end_src
+*** helm-do-grep-ag-in-frame
+#+begin_src emacs-lisp
+  (defun helm-do-grep-ag-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-do-grep-ag)))
+#+end_src
+*** helm-do-git-grep-in-frame
+#+begin_src emacs-lisp
+  (defun helm-do-git-grep-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-grep-do-git-grep)))
+#+end_src
+*** helm-imenu-in-frame
+#+begin_src emacs-lisp
+  (defun helm-imenu-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-imenu)))
+#+end_src
+*** helm-top-in-frame
+#+begin_src emacs-lisp
+  (defun helm-top-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-top)))
+#+end_src
+*** helm/zsh-history
+#+begin_src emacs-lisp
+  (defun helm/zsh-history ()
+    (interactive)
+    (helm :sources (helm-build-in-file-source "Zsh history" "~/.zsh_history"
+		     :action '(("Kill new" . kill-new)
+			       ("Send command to Tmux" . emamux:send-command)))
+	  :buffer "*helm zsh history*"))
+#+end_src
+#+begin_src emacs-lisp
+  (defun helm-zgrep-recursive (&optional directory)
+    (interactive)
+    (helm-ff-zgrep-1 (list (or directory default-directory)) t))
+#+end_src
+** w3m-open-link-or-image-in-chromium
+#+begin_src emacs-lisp
+  (defun w3m-open-link-or-image-in-chromium ()
+  "Open the current link or image in Firefox."
+  (interactive)
+  (let ((url (or (w3m-anchor) (w3m-image))))
+   (if (string-match "youtube" url) 
+       (let ((track (emms-track 'url url)))
+	  (emms-track-set track 'info-title (substring  (shell-command-to-string (concat "youtube-dl -e " url)) 0 -1))
+	  (with-current-emms-playlist
+	  (emms-playlist-insert-track track)))
+ (browse-url-generic url))))
+(define-key w3m-mode-map "z" 'w3m-open-link-or-image-in-chromium)
+#+end_src
+** emms-youtube-walk
+#+begin_src emacs-lisp
+  (defun emms-youtube-walk (node)
+      (when (listp node)
+	(let* ((title (car (nthcdr 2 (car (xml-get-children node 'title)))))
+	       (group (car (xml-get-children node 'media:group)))
+	       (description  (car (nthcdr 2 (car (xml-get-children group 'media:description)))))
+	       (url (xml-get-attribute (car (xml-get-children group 'media:player)) 'url))
+	       (thumbnail (xml-get-attribute (car (xml-get-children group 'media:thumbnail)) 'url)))
+	  (insert (concat "<li><a href=\"" url "\"><img src=\""thumbnail"\" ></a><b>"title"</b></li>"))
+	  )))
+#+end_src
+** emms-add-youtube
+#+begin_src emacs-lisp
+  (defun emms-add-youtube (search)
+    (interactive "sYoutube Search:")
+    (let* (
+	   (link (concat "https://gdata.youtube.com/feeds/api/videos?q='" search "'&max-results=50&orderby=relevance&format=5&prettyprint=true&v=2&fields=entry(title,media:group(media:player,media:description,media:thumbnail[@yt:name='hqdefault'](@url)))"))
+	   )
+      (url-retrieve  link 
+		     (lambda (s) 
+		       (beginning-of-buffer) 
+		       (search-forward "<" ) 
+		       (beginning-of-line) 
+		       (setq feed (xml-get-children (car (xml-parse-region (point) (point-max))) 'entry))
+		       (erase-buffer)
+		       (insert (concat "<html><head><title>Youtube Client "  "</title></head><body><ol>"))
+		       (mapc 'emms-youtube-walk feed)
+		       (insert "</ol></body></html>")
+		       (let ((filename (concat (make-temp-file "w3m-") ".html")))
+			 (unwind-protect
+			     (progn
+			       (write-region (point-min) (point-max) filename)
+			       (kill-buffer (current-buffer))
+					  ;			 (w3m-copy-buffer nil nil nil t)
+			       (w3m-find-file filename))
+			   (delete-file filename)))
+		       ))))
 #+end_src
 * Ui Configurations
 Configuration settings that adjust the user experience
@@ -193,8 +417,8 @@ Configuration settings that adjust the user experience
 ** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
   (tooltip-mode 1)
-  (tool-bar-mode 1)
-  (menu-bar-mode 1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
   (scroll-bar-mode -1)
 #+end_src
 ** Line Numebers
@@ -211,12 +435,12 @@ Configuration settings that adjust the user experience
 #+end_src
 ** Rainbow Delimiters
 #+begin_src emacs-lisp
-      (use-package rainbow-delimiters
-        :ensure t)
+  (use-package rainbow-delimiters
+    :ensure t :init (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
 ** Rainbow Colors
 #+begin_src emacs-lisp
-    (use-package rainbow-mode
+  (use-package rainbow-mode
     :ensure t
     :config (rainbow-mode 1))
 #+end_src
@@ -226,37 +450,37 @@ https://github.com/cofi/evil-leader
 #+begin_src emacs-lisp
   (setq evil-want-keybinding nil)
   (use-package evil
-      :ensure t
-      :config
-      (evil-mode 1)
-  (use-package evil-leader
+    :ensure t
+    :config
+    (evil-mode 1)
+    (use-package evil-leader
       :ensure t
       :config
       (global-evil-leader-mode t)
       (evil-leader/set-leader ",")
-  (use-package evil-surround
-      :ensure t
-      :config (global-evil-surround-mode))
-  (use-package evil-indent-textobject
-      :ensure t)
-  (use-package evil-org
-      :ensure t
-      :config
-      (evil-org-set-key-theme
-          '(textobjects insert navigation additional shift todo heading))
-      (add-hook 'org-mode-hook (lambda () (evil-org-mode))))
-  (use-package powerline-evil
-      :ensure t
-      :config
-      (powerline-evil-vim-color-theme))
-  (use-package evil-collection
-    :after evil
-    :ensure t
-    :config
-    (evil-collection-init)))
-  (setq evil-want-fine-undo t)
-  (advice-add 'undo-auto--last-boundary-amalgamating-number
-            :override #'ignore)
+      (use-package evil-surround
+	:ensure t
+	:config (global-evil-surround-mode))
+      (use-package evil-indent-textobject
+	:ensure t)
+      (use-package evil-org
+	:ensure t
+	:config
+	(evil-org-set-key-theme
+	 '(textobjects insert navigation additional shift todo heading))
+	(add-hook 'org-mode-hook (lambda () (evil-org-mode))))
+      (use-package powerline-evil
+	:ensure t
+	:config
+	(powerline-evil-vim-color-theme))
+      (use-package evil-collection
+	:after evil
+	:ensure t
+	:config
+	(evil-collection-init)))
+    (setq evil-want-fine-undo t)
+    (advice-add 'undo-auto--last-boundary-amalgamating-number
+		:override #'ignore)
 #+end_src
 *** use gv to reselect visual selection after actions
 ** Theming
@@ -268,33 +492,105 @@ https://github.com/cofi/evil-leader
   (use-package theme-magic
     :ensure t)
   (use-package afternoon-theme
-  :ensure t)
+    :ensure t)
   (use-package ample-theme
-  :init (progn (load-theme 'ample t t)
-	       (load-theme 'ample-flat t t)
-	       (load-theme 'ample-light t t)
-	       (enable-theme 'ample-flat))
-  :defer t
-  :ensure t)
+    :init (progn (load-theme 'ample t t)
+		 (load-theme 'ample-flat t t)
+		 (load-theme 'ample-light t t)
+		 )
+    :defer t
+    :ensure t)
   (use-package doom-themes
-  :ensure t
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-	doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;;(load-theme 'doom-nord t)
+    :ensure t
+    ;; :config
+    ;; Global settings (defaults)
+    ;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+    ;; 	doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    ;; ;;(load-theme 'doom-nord t)
 
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
-  (load-theme 'afternoon t)
+    ;; ;; Enable flashing mode-line on errors
+    ;; (doom-themes-visual-bell-config)
+    ;; ;; Enable custom neotree theme (all-the-icons must be installed!)
+    ;; (doom-themes-neotree-config)
+    ;; ;; or for treemacs users
+    ;; (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+    ;; (doom-themes-treemacs-config)
+    ;; ;; Corrects (and improves) org-mode's native fontification.
+    ;; (doom-themes-org-config)
+    )
+  (use-package spacemacs-theme :ensure t)
 #+end_src
+*** Enable Theme
+#+begin_src emacs-lisp
+  (load-theme 'spacemacs-dark t)
+#+end_src
+** Modeline
+*** Space Line
+**** Documentation
+[[https://github.com/TheBB/spaceline]]
+**** Install
+#+begin_src emacs-lisp
+  (use-package spaceline :ensure t :config (require 'spaceline-config) :init (spaceline-spacemacs-theme))
+#+end_src
+
+#+RESULTS:
+: t
+
+**** Configuration
+#+begin_src emacs-lisp
+  (spaceline-compile
+					  ; left side
+    '(((persp-name
+	workspace-number
+	window-number)
+       :fallback evil-state
+       :face highlight-face
+       :priority 100)
+      (anzu :priority 95)
+      auto-compile
+      ((buffer-modified buffer-size buffer-id remote-host)
+       :priority 98)
+      (major-mode :priority 79)
+      (process :when active)
+      ((flycheck-error flycheck-warning flycheck-info)
+       :when active
+       :priority 89)
+      (minor-modes :when active
+		   :priority 9)
+      (mu4e-alert-segment :when active)
+      (erc-track :when active)
+      (version-control :when active
+		       :priority 78)
+      (org-pomodoro :when active)
+      (org-clock :when active)
+      nyan-cat)
+					  ; right side
+    '(which-function
+      (python-pyvenv :fallback python-pyenv)
+      (purpose :priority 94)
+      (battery :when active)
+      (selection-info :priority 95)
+      input-method
+      ((buffer-encoding-abbrev
+	point-position
+	line-column)
+       :separator " | "
+       :priority 96)
+      (global :when active)
+      (buffer-position :priority 99)
+      (hud :priority 99)))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ())
+
+*** Fancy Battery
+#+begin_src emacs-lisp
+  (use-package fancy-battery :ensure t :init (add-hook 'after-init-hook #'fancy-battery-mode))
+#+end_src
+
+#+RESULTS:
+
 ** Emacs Startup
 #+begin_src emacs-lisp
   (use-package dashboard
@@ -304,17 +600,17 @@ https://github.com/cofi/evil-leader
     (dashboard-setup-startup-hook)
     (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
     (setq dashboard-items '((recents  . 5)
-		      (bookmarks . 5)
-		      (projects . 5)
-		      (agenda . 5)
-		      (registers . 5)))
+			    (bookmarks . 5)
+			    (projects . 5)
+			    (agenda . 5)
+			    (registers . 5)))
     (setq dashboard-set-heading-icons t)
     (setq dashboard-set-file-icons t)
     (setq dashboard-set-navigator t)
     (setq dashboard-set-init-info t)
     (setq dashboard-week-agenda t)
     (setq dashboard-center-content t)
-    (setq dashboard-startup-banner "/home/th3r00t/Pictures/Avatars/th3r00tahi.png")
+    (setq dashboard-startup-banner "/home/th3r00t/Pictures/Avatars/hooded-hacker-laptop.png")
     ;; Value can be
     ;; 'official which displays the official emacs logo
     ;; 'logo which displays an alternative emacs logo
@@ -325,32 +621,32 @@ https://github.com/cofi/evil-leader
 ** iBuffer
 #+begin_src emacs-lisp
   (setq ibuffer-saved-filter-groups
-	  (quote (("default"
-		   ("dired" (mode . dired-mode))
-		   ("perl" (mode . cperl-mode))
-		   ("erc" (mode . erc-mode))
-		   ("planner" (or
-			       (name . "^\\*Calendar\\*$")
-			       (name . "^diary$")
-			       (mode . muse-mode)))
-		   ("emacs" (or
-			     (name . "^\\*scratch\\*$")
-			     (name . "^\\*Messages\\*$")))
-		   ("svg" (name . "\\.svg")) ; group by file extension
-		   ("gnus" (or
-			    (mode . message-mode)
-			    (mode . bbdb-mode)
-			    (mode . mail-mode)
-			    (mode . gnus-group-mode)
-			    (mode . gnus-summary-mode)
-			    (mode . gnus-article-mode)
-			    (name . "^\\.bbdb$")
-			    (name . "^\\.newsrc-dribble")))))))
-      (add-hook 'ibuffer-mode-hook
-	      (lambda ()
-		(ibuffer-switch-to-saved-filter-groups "default")))
-    (defadvice ibuffer-update-title-and-summary (after remove-column-titles)
-   (save-excursion
+	(quote (("default"
+		 ("dired" (mode . dired-mode))
+		 ("perl" (mode . cperl-mode))
+		 ("erc" (mode . erc-mode))
+		 ("planner" (or
+			     (name . "^\\*Calendar\\*$")
+			     (name . "^diary$")
+			     (mode . muse-mode)))
+		 ("emacs" (or
+			   (name . "^\\*scratch\\*$")
+			   (name . "^\\*Messages\\*$")))
+		 ("svg" (name . "\\.svg")) ; group by file extension
+		 ("gnus" (or
+			  (mode . message-mode)
+			  (mode . bbdb-mode)
+			  (mode . mail-mode)
+			  (mode . gnus-group-mode)
+			  (mode . gnus-summary-mode)
+			  (mode . gnus-article-mode)
+			  (name . "^\\.bbdb$")
+			  (name . "^\\.newsrc-dribble")))))))
+  (add-hook 'ibuffer-mode-hook
+	    (lambda ()
+	      (ibuffer-switch-to-saved-filter-groups "default")))
+  (defadvice ibuffer-update-title-and-summary (after remove-column-titles)
+    (save-excursion
       (with-current-buffer "*Ibuffer*")
       (read-only-mode 0)
       (goto-char 1)
@@ -369,13 +665,13 @@ https://github.com/cofi/evil-leader
 #+end_src
 ** Dired
 #+begin_src emacs-lisp
-(use-package dired-sidebar
+  (use-package dired-sidebar
     :ensure t
     :init
-	(add-hook 'dired-sidebar-mode-hook
-	(lambda()
-	(unless (file-remote-p default-directory)
-	(auto-revert-mode))))
+    (add-hook 'dired-sidebar-mode-hook
+	      (lambda()
+		(unless (file-remote-p default-directory)
+		  (auto-revert-mode))))
     :config
     (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
     (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
@@ -383,8 +679,24 @@ https://github.com/cofi/evil-leader
     (setq dired-sidebar-theme 'vscode)
     (setq dired-sidebar-use-term-integration t)
     (setq dired-sidebar-use-custom-font t)
-)
+    )
 #+end_src
+** Fill Column
+*** install
+#+begin_src emacs-lisp
+  (use-package fill-column-indicator :ensure t
+    :init (require 'fill-column-indicator)
+    )
+#+end_src
+*** TODO configuration
+#+begin_src emacs-lisp
+  (setq fci-rule-width 4)
+  (setq fci-rule-color "darkblue")
+  (add-hook 'prog-mode-hook #'fci-mode)
+#+end_src
+#+RESULTS:
+| fci-mode | lsp-deferred | hs-minor-mode | rainbow-delimiters-mode |
+
 * General Configurations
 ** Default Overrides
 *** yes-no
@@ -422,39 +734,58 @@ https://www.emacswiki.org/emacs/TrampMode
 https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-emacs
 #+begin_src emacs-lisp
   (defun clipboard-yank-my (&rest args)
-  """ wrapper: yank with shifting yanked text to current cursor column """
-  ;; wrapping: https://emacs.stackexchange.com/questions/19215/how-to-write-a-transparent-pass-through-function-wrapper#comment55216_19242)
-  (interactive (advice-eval-interactive-spec
-                (cadr (interactive-form #'clipboard-yank))))
-  
-  (setq point1 (point))
-  (beginning-of-line)
-  (setq pointStart (point))
-  (setq currentColumn (- point1 (point)))
+    """ wrapper: yank with shifting yanked text to current cursor column """
+    ;; wrapping: https://emacs.stackexchange.com/questions/19215/how-to-write-a-transparent-pass-through-function-wrapper#comment55216_19242)
+    (interactive (advice-eval-interactive-spec
+		  (cadr (interactive-form #'clipboard-yank))))
 
-  ;; ORIGINAL 
-  (apply #'clipboard-yank args)
+    (setq point1 (point))
+    (beginning-of-line)
+    (setq pointStart (point))
+    (setq currentColumn (- point1 (point)))
 
-  (newline)
-  ;; (print col)
-  (set-mark-command nil)
-  (goto-char pointStart)
-  (indent-rigidly
-   (region-beginning)
-   (region-end)
-   currentColumn)
-  (goto-char point1) 
-  ;; (setq deactivate-mark nil)
-  )
+    ;; ORIGINAL 
+    (apply #'clipboard-yank args)
+
+    (newline)
+    ;; (print col)
+    (set-mark-command nil)
+    (goto-char pointStart)
+    (indent-rigidly
+     (region-beginning)
+     (region-end)
+     currentColumn)
+    (goto-char point1) 
+    ;; (setq deactivate-mark nil)
+    )
 #+end_src
 ** Follow Symlinks
 #+begin_src emacs-lisp
   (setq find-file-visit-truename t)
 #+end_src
+** Folding
+#+begin_src emacs-lisp
+  ;;(use-package origami :ensure t :config (require 'origami) :init (setq global-origami-mode 't))
+  (add-hook 'prog-mode-hook #'hs-minor-mode)
+  ;;(add-hook 'prog-mode-hook (lambda () (evil-close-folds)))
+#+end_src
+
+#+RESULTS:
+| (lambda nil (evil-close-folds)) | evil-close-folds | hs-minor-mode | hs-mo=inor-mode | lsp-deferred | rainbow-delimiters-mode |
+
+** Undo
+#+begin_src emacs-lisp
+  (use-package undo-tree :ensure t)
+  (global-undo-tree-mode)
+#+end_src
+
+#+RESULTS:
+
 * Registers
 #+begin_src emacs-lisp
   (set-register ?e (cons 'file "~/.emacs.d/"))
   (set-register ?z (cons 'file "~/.zshrc"))
+  (set-register ?x (cons 'file "~/.xinitrc"))
 #+end_src
 * File Management
 ** NeoTree
@@ -469,92 +800,152 @@ https://github.com/jaypei/emacs-neotree
 ** Projectile
 https://projectile.mx/
 #+begin_src emacs-lisp
-    (use-package projectile
-      :ensure t
-      :config
-      (projectile-mode t))
-    (use-package helm-projectile
-      :ensure t)
+  (use-package projectile
+    :ensure t
+    :config
+    (projectile-mode t))
+  (use-package helm-projectile
+    :ensure t)
 #+end_src
 ** Magit
 https://magit.vc/
 #+begin_src emacs-lisp
-    (use-package magit :ensure t)
+  (use-package magit :ensure t)
 #+end_src
 * Development Plugins (General)
 ** Indent Handling
 #+begin_src emacs-lisp
-    ;;(use-package auto-indent-mode
-    ;;    :ensure t)
-    ;;(auto-indent-global-mode)
-    (electric-indent-mode 1)
-    ;;; Indentation for python
+  ;;(use-package auto-indent-mode
+  ;;    :ensure t)
+  ;;(auto-indent-global-mode)
+  (electric-indent-mode 1)
+  ;;; Indentation for python
 
-    ;; Ignoring electric indentation
-    (defun electric-indent-ignore-python (char)
+  ;; Ignoring electric indentation
+  (defun electric-indent-ignore-python (char)
     "Ignore electric indentation for python-mode"
     (if (equal major-mode 'python-mode)
 	'no-indent
-	nil))
-    (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
+      nil))
+  (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
 
-    ;; Enter key executes newline-and-indent
-    (defun set-newline-and-indent ()
+  ;; Enter key executes newline-and-indent
+  (defun set-newline-and-indent ()
     "Map the return key with `newline-and-indent'"
     (local-set-key (kbd "RET") 'newline-and-indent))
-    (add-hook 'python-mode-hook 'set-newline-and-indent)
-    (dolist (command '(yank yank-pop))
-	(eval `(defadvice ,command (after indent-region activate)
-	    (and (not current-prefix-arg)
-		    (member major-mode '(emacs-lisp-mode lisp-mode
-					    clojure-mode    scheme-mode
-					    haskell-mode    ruby-mode
-					    rspec-mode      python-mode
-					    c-mode          c++-mode
-					    objc-mode       latex-mode
-					    plain-tex-mode))
-		    (let ((mark-even-if-inactive transient-mark-mode))
-		(indent-region (region-beginning) (region-end) nil))))))
+  (add-hook 'python-mode-hook 'set-newline-and-indent)
+  (dolist (command '(yank yank-pop))
+    (eval `(defadvice ,command (after indent-region activate)
+	     (and (not current-prefix-arg)
+		  (member major-mode '(emacs-lisp-mode lisp-mode
+						       clojure-mode    scheme-mode
+						       haskell-mode    ruby-mode
+						       rspec-mode      python-mode
+						       c-mode          c++-mode
+						       objc-mode       latex-mode
+						       plain-tex-mode))
+		  (let ((mark-even-if-inactive transient-mark-mode))
+		    (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
 
 ** Lsp
+*** Install
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :ensure t
     :init
     (setq lsp-keymap-prefix "C-c l")
-   :hook(
-         (prog-mode . lsp-deferred)
-         (lsp-mode . lsp-enable-which-key-integration))
-   :commands lsp)
+    :hook(
+	  (prog-mode . lsp-deferred)
+	  (lsp-mode . lsp-enable-which-key-integration)
+	  )
+    :commands lsp)
   (use-package lsp-ui :commands lsp-ui-mode :ensure t)
   (use-package helm-lsp :commands helm-lsp-workspace-symbol :ensure t)
 #+end_src
-** DAP
+*** Configure
 #+begin_src emacs-lisp
-    (use-package dap-mode
-      :ensure t)
+  (setq lsp-ui-sideline-show-diagnostics 1)
+  (setq lsp-ui-sideline-show-hover t)
+  (setq lsp-ui-sideline-show-code-actions t)
+  (setq lsp-ui-peek-enable t)
+  (setq lsp-ui-peek-show-directory t)
+  (setq lsp-ui-doc-enable t)
+  (setq lsp-ui-doc-show-with-cursor t)
+  (setq lsp-lens-enable t)
+  (setq lsp-headerline-breadcrumb-enable t)
+  (setq lsp-conpletion-enable t)
+  (setq lsp-completion-provider :capf)
+  (setq lsp-completion-show-detail t)
+  (setq lsp-completion-show-kind t)
+  (setq lsp-enable-snippet t)
+#+end_src
+** DAP
+*** Install
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    :ensure t)
+#+end_src
+*** Configuration
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    :after lsp-mode
+    :commands dap-debug
+    :hook ((python-mode . dap-ui-mode) (python-mode . dap-mode))
+    :config
+    (require 'dap-python)
+    (setq dap-python-debugger 'debugpy)
+    (add-hook 'dap-stopped-hook
+	      (lambda (arg) (call-interactively #'dap-hydra))))
+#+end_src
+#+begin_src emacs-lisp
+  (dap-mode 1)
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (dap-ui-controls-mode 1)
 #+end_src
 ** Cmake
 #+begin_src emacs-lisp
   (use-package cmake-project
-  :ensure t)
+    :ensure t)
   (defun maybe-cmake-project-mode ()
     (if (or (file-exists-p "CMakeLists.txt")
 	    (file-exists-p (expand-file-name "CMakeLists.txt" (car (project-roots (project-current))))))
 	(cmake-project-mode)))
 
-	(add-hook 'c-mode-hook 'maybe-cmake-project-mode)
-	(add-hook 'c++-mode-hook 'maybe-cmake-project-mode)
+  (add-hook 'c-mode-hook 'maybe-cmake-project-mode)
+  (add-hook 'c++-mode-hook 'maybe-cmake-project-mode)
 #+end_src
 ** FlyMake
 #+begin_src emacs-lisp
-    (use-package flymake
-  :ensure t)
+  (use-package flymake
+    :ensure t)
 #+end_src
 ** Flycheck
 #+begin_src emacs-lisp
   (use-package flycheck :ensure t :init (global-flycheck-mode t))
+#+end_src
+** VDiff
+#+begin_src emacs-lisp
+  (use-package vdiff :ensure t :config (require 'vdiff) (define-key vdiff-mode-map (kbd "C-x") vdiff-mode-prefix-map))
+#+end_src
+
+#+RESULTS:
+: t
+
+** Xml
+#+begin_src emacs-lisp
+  (use-package xml-format :ensure t :demand t :after nxml-mode)
+#+end_src
+** YaS Snippets
+#+begin_src emacs-lisp
+  (use-package yasnippet :ensure t :init (require 'yasnippet) :config (yas-global-mode 1))
+#+end_src
+** Doom Snippets
+#+begin_src emacs-lisp
+  (use-package doom-snippets
+    :after yasnippet
+    :straight (doom-snippets :type git :host github :repo "hlissner/doom-snippets" :files ("*.el" "*")))
 #+end_src
 * Development Plugins (Languages)
 ** Godot Script
@@ -562,7 +953,7 @@ https://github.com/godotengine/emacs-gdscript-mode
 https://langroudi.co.uk/post/emacs_godot_csharp/
 #+begin_src emacs-lisp
   (use-package gdscript-mode
-  :ensure t
+    :ensure t
     :straight (gdscript-mode
 	       :type git
 	       :host github
@@ -572,25 +963,25 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 *** Supress unknown notifications
 #+begin_src emacs-lisp
   (defun lsp--gdscript-ignore-errors (original-function &rest args)
-  "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
-  (if (string-equal major-mode "gdscript-mode")
-      (let ((json-data (nth 0 args)))
-        (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
-                 (not (gethash "id" json-data nil))
-                 (not (gethash "method" json-data nil)))
-            nil ; (message "Method not found")
-          (apply original-function args)))
-    (apply original-function args)))
-;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
-(advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
+    "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
+    (if (string-equal major-mode "gdscript-mode")
+	(let ((json-data (nth 0 args)))
+	  (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
+		   (not (gethash "id" json-data nil))
+		   (not (gethash "method" json-data nil)))
+	      nil ; (message "Method not found")
+	    (apply original-function args)))
+      (apply original-function args)))
+  ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
+  (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 #+end_src
 ** Csharp
 #+begin_src emacs-lisp
-    (use-package tree-sitter :ensure t)
-    (use-package tree-sitter-langs :ensure t)
-    (use-package tree-sitter-indent :ensure t)
+  (use-package tree-sitter :ensure t)
+  (use-package tree-sitter-langs :ensure t)
+  (use-package tree-sitter-indent :ensure t)
 
-    (use-package csharp-mode
+  (use-package csharp-mode
     :ensure t
     :config
     (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode)))
@@ -599,6 +990,27 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 #+begin_src emacs-lisp
   (use-package yasnippet-snippets :ensure t :config (require 'yasnippet)(yas-global-mode 1))
   (use-package modern-cpp-font-lock :ensure t)
+  (use-package cmake-ide :ensure t :config (cmake-ide-setup))
+  (use-package cpputils-cmake :ensure t)
+  (add-hook 'c-mode-common-hook
+	    (lambda ()
+	      (if (derived-mode-p 'c-mode 'c++-mode)
+		  (cppcm-reload-all)
+		)))
+  ;; OPTIONAL, somebody reported that they can use this package with Fortran
+  (add-hook 'c90-mode-hook (lambda () (cppcm-reload-all)))
+  ;; OPTIONAL, avoid typing full path when starting gdb
+  (global-set-key (kbd "C-c C-g")
+		  '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer)))))
+  ;; OPTIONAL, some users need specify extra flags forwarded to compiler
+  (setq cppcm-extra-preprocss-flags-from-user '("-I/usr/src/linux/include" "-DNDEBUG"))
+#+end_src
+
+#+RESULTS:
+: t
+
+** Python
+#+begin_src emacs-lisp
 #+end_src
 * Completion System
 ** Pop-up
@@ -624,73 +1036,124 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 #+end_src
 ** Company
 https://company-mode.github.io/
+*** Install
 #+begin_src emacs-lisp
-        (use-package company
-          :ensure t
-          :config
-         (add-hook 'after-init-hook 'global-company-mode)
- )
+  (use-package company
+    :ensure t
+    :config
+    (add-hook 'after-init-hook 'global-company-mode)
+    )
+  (use-package company-c-headers :ensure t)
+  (use-package company-gtags :ensure t)
+  (use-package company-elisp :ensure t)
+#+end_src
+*** Configure
+#+begin_src emacs-lisp
+  
+  (setq company-backends (delete 'company-semantic company-backends))
+  (define-key c-mode-map  [(tab)] 'company-complete)
+  (define-key c++-mode-map  [(tab)] 'company-complete)
+  (add-to-list 'company-backends 'company-c-headers)
+  (add-to-list 'company-c-headers-path-system "/usr/include/c++/12.1.1/")
 #+end_src
 ** Helm
 https://github.com/emacs-helm/helm/wiki
 http://tuhdo.github.io/helm-intro.html
 https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
+*** Install
 #+begin_src emacs-lisp
   (use-package helm
-      :ensure t
-      :straight t
-      :config
-      (helm-mode 1)
-    )
-    (global-set-key (kbd "M-x") #'helm-M-x)
-    (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
-    (global-set-key (kbd "C-x C-f") #'helm-find-files)
+    :ensure t
+    :straight t
+    :config
+    (helm-mode 1)
+    :init 
     (require 'helm)
     (require 'helm-config)
+    )
+  (use-package ggtags :ensure t :init (require 'setup-ggtags))
+#+end_src
+*** Configure
+**** Helm General
+#+begin_src emacs-lisp
+  ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+  ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+  ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+  (global-set-key (kbd "M-x") #'helm-M-x)
+  (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+  (global-set-key (kbd "C-x C-f") #'helm-find-files)
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-unset-key (kbd "C-x c"))
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+  (setq helm-M-x-fuzzy-match t)
+  ;;(setq helm-display-function 'helm-display-buffer-in-own-frame helm-display-buffer-reuse-frame t)
+  (setq helm-input-idle-delay                     0.01
+	helm-reuse-last-window-split-state        t
+	helm-always-two-windows                   t
+	helm-split-window-inside-p                t
+	helm-commands-using-frame                 '(completion-at-point helm-apropos helm-eshell-prompts helm-imenu helm-imenu-in-all-buffers)
+	helm-actions-inherit-frame-settings       t
+	helm-use-frame-when-more-than-two-windows nil
+	helm-use-frame-when-dedicated-window      nil
+	helm-frame-background-color               "DarkSlateGray"
+	helm-show-action-window-other-window      'left
+	helm-allow-mouse                          t
+	helm-move-to-line-cycle-in-source         t
+	helm-autoresize-max-height                40 ; it is %.
+	helm-autoresize-min-height                20 ; it is %.
+	helm-autoresize-mode 1
+	helm-debug-root-directory                 "/home/th3r00t/tmp/helm-debug"
+	helm-follow-mode-persistent               t
+	helm-candidate-number-limit               500
+	helm-visible-mark-prefix                  "✓"
+	helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+	helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+	helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+	helm-ff-file-name-history-use-recentf t
+	helm-echo-input-in-header-line t)
+  (when (executable-find "curl") (setq helm-google-suggest-use-curl-p t))
+#+end_src
+**** Helm Gtags
+#+begin_src emacs-lisp
+  (setq
+   helm-gtags-ignore-case t
+   helm-gtags-auto-update t
+   helm-gtags-use-input-at-cursor t
+   helm-gtags-pulse-at-cursor t
+   helm-gtags-prefix-key "\C-cg"
+   helm-gtags-suggested-key-mapping t
+   )
 
-;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-(global-set-key (kbd "C-c h") 'helm-command-prefix)
-(global-unset-key (kbd "C-x c"))
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-(setq helm-M-x-fuzzy-match t)
-;;(setq helm-display-function 'helm-display-buffer-in-own-frame helm-display-buffer-reuse-frame t)
-(setq helm-input-idle-delay                     0.01
-    helm-reuse-last-window-split-state        t
-    helm-always-two-windows                   t
-    helm-split-window-inside-p                t
-    helm-commands-using-frame                 '(completion-at-point helm-apropos helm-eshell-prompts helm-imenu helm-imenu-in-all-buffers)
-    helm-actions-inherit-frame-settings       t
-    helm-use-frame-when-more-than-two-windows nil
-    helm-use-frame-when-dedicated-window      nil
-    helm-frame-background-color               "DarkSlateGray"
-    helm-show-action-window-other-window      'left
-    helm-allow-mouse                          t
-    helm-move-to-line-cycle-in-source         t
-    helm-autoresize-max-height                40 ; it is %.
-    helm-autoresize-min-height                20 ; it is %.
-    helm-autoresize-mode 1
-    helm-debug-root-directory                 "/home/th3r00t/tmp/helm-debug"
-    helm-follow-mode-persistent               t
-    helm-candidate-number-limit               500
-    helm-visible-mark-prefix                  "✓"
-    helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
-    helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-    helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-    helm-ff-file-name-history-use-recentf t
-    helm-echo-input-in-header-line t)
-(when (executable-find "curl") (setq helm-google-suggest-use-curl-p t))
+  (require 'helm-gtags)
+  ;; Enable helm-gtags-mode
+  (add-hook 'dired-mode-hook 'helm-gtags-mode)
+  (add-hook 'eshell-mode-hook 'helm-gtags-mode)
+  (add-hook 'c-mode-hook 'helm-gtags-mode)
+  (add-hook 'c++-mode-hook 'helm-gtags-mode)
+  (add-hook 'asm-mode-hook 'helm-gtags-mode)
+
+  (define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
+  (define-key helm-gtags-mode-map (kbd "C-j") 'helm-gtags-select)
+  (define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
+  (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
+  (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
+  (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
 #+end_src
 *** Helm Silver Searcher
 https://github.com/emacsorphanage/helm-ag
 #+begin_src emacs-lisp
   (use-package helm-ag
-      :ensure t
-      )  
+    :ensure t
+    )  
 #+end_src
+** Speedbar
+#+begin_src emacs-lisp
+  (use-package sr-speedbar :ensure t)
+#+end_src
+
+#+RESULTS:
 
 * Key Bindings
 ** Which Key
@@ -701,15 +1164,45 @@ https://github.com/justbur/emacs-which-key
     :config
     (which-key-mode))
 #+end_src
+** Macros
+*** Execute a shell command and insert return
+#+begin_src emacs-lisp
+  (fset 'exec2point
+	(kmacro-lambda-form [?\C-u ?\M-! ?\C-x ?q return] 0 "%d"))
+#+end_src
 ** Bindings
 https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
 #+begin_src emacs-lisp
   (global-set-key [C-tab] 'sidebar-toggle)
+  (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
+  (global-set-key (kbd "C-c n f") 'org-roam-node-find)
+  (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
+  (global-set-key (kbd "C-c n I") 'org-roam-node-insert-immediate)
+  (global-set-key (kbd "C-c n c") 'org-roam-capture)
+  (global-set-key (kbd "C-c n C") 'org-capture)
+  (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
+  (global-set-key (kbd "C-c o") 'helm-occur)
+  (global-set-key (kbd "C-; ;") 'exec2point)
+  (global-set-key (kbd "C-; t t") 'helm-top)
+  (global-set-key (kbd "C-; t T") 'helm-top-in-frame)
+  (global-set-key (kbd "C-; m p") 'emms-metaplaylist-mode-go)
+  (global-set-key (kbd "C-; m h") 'helm-emms)
+  (global-set-key (kbd "C-; m s") 'emms-stop)
+  (global-set-key (kbd "C-; m S") 'emms-start)
+
+  (define-key yas-minor-mode-map (kbd "C-SPC") yas-maybe-expand)
   (evil-leader/set-key
     "b" '("Buffers" . (keymap))
     "b b" 'helm-buffers-list
     "b n" 'next-buffer
     "b p" 'previous-buffer
+    "b e" 'eval-buffer
+    "b k" 'kill-buffer
+    "d" '("Develop" . (keymap))
+    "d d" 'dap-debug
+    "d h" 'dap-hydra
+    "d b b" 'dap-breakpoint-toggle
+    "d r" 'dap-ui-repl
     "f" '("Files" . (keymap))
     "f f" 'helm-find-files
     "f s" 'sudo-find-file
@@ -765,8 +1258,8 @@ https://github.com/Wilfred/helpful
 ** libvterm
 https://github.com/akermu/emacs-libvterm
 #+begin_src emacs-lisp
-    (use-package vterm
-      :ensure t)
+  (use-package vterm
+    :ensure t)
 #+end_src
 ** vterm-toggle
 https://github.com/kitnil/emacs-vterm-toggle
@@ -778,14 +1271,14 @@ https://github.com/kitnil/emacs-vterm-toggle
 #+begin_src emacs-lisp
   (setq vterm-toggle-fullscreen-p nil)
   (add-to-list 'display-buffer-alist
-               '("^v?term.*"
-                  (display-buffer-reuse-window display-buffer-at-bottom)
-                  ;;(display-buffer-reuse-window display-buffer-in-direction)
-                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-                  (direction . bottom)
-                  (dedicated . t) ;dedicated is supported in emacs27
-                  (reusable-frames . visible)
-                  (window-height . 0.15)))
+	       '("^v?term.*"
+		 (display-buffer-reuse-window display-buffer-at-bottom)
+		 ;;(display-buffer-reuse-window display-buffer-in-direction)
+		 ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+		 (direction . bottom)
+		 (dedicated . t) ;dedicated is supported in emacs27
+		 (reusable-frames . visible)
+		 (window-height . 0.15)))
 #+end_src
 
 * MU4E
@@ -794,41 +1287,41 @@ https://github.com/kitnil/emacs-vterm-toggle
 #+end_src
 ** Multiple Account Configuration  
 #+begin_src emacs-lisp
-;; assumed Maildir layout
-;; ~/Maildir/Account0/{Inbox,Sent,Trash}
-;; ~/Maildir/Account1/{Inbox,Sent,Trash}
-;; where Account0 is context name
-(defun my-make-mu4e-context (context-name full-name mail-address signature)
-"Return a mu4e context named CONTEXT-NAME with :match-func matching
-folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
-`user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
-FULL-NAME and SIGNATURE respectively.
-Special folders are set to context specific folders."
-(let ((dir-name (concat "/" context-name)))
-    (make-mu4e-context
-    :name context-name
-    ;; we match based on the maildir of the message
-    ;; this matches maildir /Arkham and its sub-directories
-    :match-func
-    `(lambda (msg)
-	(when msg
-	(string-match-p
-	,(concat "^" dir-name)
-	(mu4e-message-field msg :maildir))))
-    :vars
-    `((user-mail-address    . ,mail-address)
-	(user-full-name       . ,full-name)
-	(mu4e-sent-folder     . ,(concat dir-name "/Sent"))
-	(mu4e-drafts-folder   . ,(concat dir-name "/Drafts"))
-	(mu4e-trash-folder    . ,(concat dir-name "/Trash"))
-	(mu4e-refile-folder   . ,(concat dir-name "/Archive"))
-	(mu4e-compose-signature . ,signature)))))
-;;Fixing duplicate UID errors when using mbsync and mu4e
-(setq mu4e-change-filenames-when-moving t)
-(setq mu4e-contexts
-    `(,(my-make-mu4e-context
-	"admin" "Raelon 'th3r00t' Masters" "admin@mylt.dev" "<a href=home.mylt.dev>th3r00t</a>"
-	)))
+  ;; assumed Maildir layout
+  ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
+  ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
+  ;; where Account0 is context name
+  (defun my-make-mu4e-context (context-name full-name mail-address signature)
+    "Return a mu4e context named CONTEXT-NAME with :match-func matching
+  folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
+  `user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
+  FULL-NAME and SIGNATURE respectively.
+  Special folders are set to context specific folders."
+    (let ((dir-name (concat "/" context-name)))
+      (make-mu4e-context
+       :name context-name
+       ;; we match based on the maildir of the message
+       ;; this matches maildir /Arkham and its sub-directories
+       :match-func
+       `(lambda (msg)
+	  (when msg
+	    (string-match-p
+	     ,(concat "^" dir-name)
+	     (mu4e-message-field msg :maildir))))
+       :vars
+       `((user-mail-address    . ,mail-address)
+	 (user-full-name       . ,full-name)
+	 (mu4e-sent-folder     . ,(concat dir-name "/Sent"))
+	 (mu4e-drafts-folder   . ,(concat dir-name "/Drafts"))
+	 (mu4e-trash-folder    . ,(concat dir-name "/Trash"))
+	 (mu4e-refile-folder   . ,(concat dir-name "/Archive"))
+	 (mu4e-compose-signature . ,signature)))))
+  ;;Fixing duplicate UID errors when using mbsync and mu4e
+  (setq mu4e-change-filenames-when-moving t)
+  (setq mu4e-contexts
+	`(,(my-make-mu4e-context
+	    "admin" "Raelon 'th3r00t' Masters" "admin@mylt.dev" "<a href=home.mylt.dev>th3r00t</a>"
+	    )))
 #+end_src
 
 #+RESULTS:
@@ -838,39 +1331,39 @@ Special folders are set to context specific folders."
 #+begin_src emacs-lisp
   (setq mu4e-get-mail-command "mbsync -a")
   ;; Most of the time, I merely want mu4e to re-index my local maildir (because
-    ;; I'm running mbsync as a cron job). However, sometimes I want to fetch mails
-    ;; immediately. Do this by changing the meaning of a prefix for
-    ;; mu4e-update-mail-and-index (bound to "U").
-    ;;
-    ;; A prefix usually means run in the background, but I don't think I ever want
-    ;; that. Change things so a prefix means to call mbsync.
-    (defun th3r00t/mu4e-update-mail-and-index (orig-fun prefix &rest args)
-      (interactive "P")
-      (if prefix (funcall orig-fun nil) (mu4e-update-index)))
-      (advice-add 'mu4e-update-mail-and-index
-		:around #'th3r00t/mu4e-update-mail-and-index)
+  ;; I'm running mbsync as a cron job). However, sometimes I want to fetch mails
+  ;; immediately. Do this by changing the meaning of a prefix for
+  ;; mu4e-update-mail-and-index (bound to "U").
+  ;;
+  ;; A prefix usually means run in the background, but I don't think I ever want
+  ;; that. Change things so a prefix means to call mbsync.
+  (defun my/mu4e-update-mail-and-index (orig-fun prefix &rest args)
+    (interactive "P")
+    (if prefix (funcall orig-fun nil) (mu4e-update-index)))
+  (advice-add 'mu4e-update-mail-and-index
+	      :around #'my/mu4e-update-mail-and-index)
   ;;Fixing duplicate UID errors when using mbsync and mu4e
-    (setq mu4e-change-filenames-when-moving t)
+  (setq mu4e-change-filenames-when-moving t)
 #+end_src
 
 ** mu4e-alert
 #+begin_src emacs-lisp
   (use-package mu4e-alert
-  :ensure t
-  :after mu4e
-  :init
-  (setq mu4e-alert-interesting-mail-query
-    (concat
-     "flag:unread maildir:/admin@mylt.dev/inbox "
-     ))
-  (mu4e-alert-enable-mode-line-display)
-  (defun gjstein-refresh-mu4e-alert-mode-line ()
-    (interactive)
-    (mu4e-kill-update-mail)
+    :ensure t
+    :after mu4e
+    :init
+    (setq mu4e-alert-interesting-mail-query
+	  (concat
+	   "flag:unread maildir:/admin@mylt.dev/inbox "
+	   ))
     (mu4e-alert-enable-mode-line-display)
+    (defun gjstein-refresh-mu4e-alert-mode-line ()
+      (interactive)
+      (mu4e-kill-update-mail)
+      (mu4e-alert-enable-mode-line-display)
+      )
+    (run-with-timer 0 60 'gjstein-refresh-mu4e-alert-mode-line)
     )
-  (run-with-timer 0 60 'gjstein-refresh-mu4e-alert-mode-line)
-  )
 #+end_src
 Alert for multiple email accounts
 #+begin_src 
@@ -884,49 +1377,49 @@ Alert for multiple email accounts
 ** sending mail
 #+begin_src emacs-lisp
   ;; I have my "default" parameters from Gmail
-(setq mu4e-sent-folder "/home/th3r00t/.local/share/mail/admin/Sent"
-      ;; mu4e-sent-messages-behavior 'delete ;; Unsure how this should be configured
-      mu4e-drafts-folder "/home/th3r00t/.local/share/mail/admin/Drafts"
-      user-mail-address "admin@mylt.dev"
-      smtpmail-default-smtp-server "smtp.office365.com"
-      smtpmail-smtp-server "smtp.office365.com"
-      smtpmail-smtp-service 587)
+  (setq mu4e-sent-folder "/home/th3r00t/.local/share/mail/admin/Sent"
+	;; mu4e-sent-messages-behavior 'delete ;; Unsure how this should be configured
+	mu4e-drafts-folder "/home/th3r00t/.local/share/mail/admin/Drafts"
+	user-mail-address "admin@mylt.dev"
+	smtpmail-default-smtp-server "smtp.office365.com"
+	smtpmail-smtp-server "smtp.office365.com"
+	smtpmail-smtp-service 587)
 
-;; Now I set a list of 
-(defvar my-mu4e-account-alist
-  '(("Admin"
-     (mu4e-sent-folder "/admin/Sent")
-     (user-mail-address "admin@mylt.dev")
-     (smtpmail-smtp-user "admin@mylt.dev")
-     (smtpmail-local-domain "mylt.dev")
-     (smtpmail-default-smtp-server "smtp.office365.com")
-     (smtpmail-smtp-server "smtp.office365.com")
-     (smtpmail-smtp-service 587)
-     )
-     ;; Include any other accounts here ...
-    ))
+  ;; Now I set a list of 
+  (defvar my-mu4e-account-alist
+    '(("Admin"
+       (mu4e-sent-folder "/admin/Sent")
+       (user-mail-address "admin@mylt.dev")
+       (smtpmail-smtp-user "admin@mylt.dev")
+       (smtpmail-local-domain "mylt.dev")
+       (smtpmail-default-smtp-server "smtp.office365.com")
+       (smtpmail-smtp-server "smtp.office365.com")
+       (smtpmail-smtp-service 587)
+       )
+      ;; Include any other accounts here ...
+      ))
 
-(defun my-mu4e-set-account ()
-  "Set the account for composing a message.
-   This function is taken from: 
-     https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
-  (let* ((account
-    (if mu4e-compose-parent-message
-        (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
-    (string-match "/\\(.*?\\)/" maildir)
-    (match-string 1 maildir))
-      (completing-read (format "Compose with account: (%s) "
-             (mapconcat #'(lambda (var) (car var))
-            my-mu4e-account-alist "/"))
-           (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
-           nil t nil nil (caar my-mu4e-account-alist))))
-   (account-vars (cdr (assoc account my-mu4e-account-alist))))
-    (if account-vars
-  (mapc #'(lambda (var)
-      (set (car var) (cadr var)))
-        account-vars)
-      (error "No email account found"))))
-(add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
+  (defun my-mu4e-set-account ()
+    "Set the account for composing a message.
+     This function is taken from: 
+       https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
+    (let* ((account
+	    (if mu4e-compose-parent-message
+		(let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
+		  (string-match "/\\(.*?\\)/" maildir)
+		  (match-string 1 maildir))
+	      (completing-read (format "Compose with account: (%s) "
+				       (mapconcat #'(lambda (var) (car var))
+						  my-mu4e-account-alist "/"))
+			       (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
+			       nil t nil nil (caar my-mu4e-account-alist))))
+	   (account-vars (cdr (assoc account my-mu4e-account-alist))))
+      (if account-vars
+	  (mapc #'(lambda (var)
+		    (set (car var) (cadr var)))
+		account-vars)
+	(error "No email account found"))))
+  (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
 #+end_src
 ** Avoid trash on delete
 #+begin_src
@@ -942,30 +1435,295 @@ Alert for multiple email accounts
        :prompt "dtrash"
        :dyn-target (lambda (target msg) (mu4e-get-trash-folder msg))
        :action (lambda (docid msg target) 
-                 (mu4e~proc-move docid
-                    (mu4e~mark-check-target target) "-N"))))
+		 (mu4e~proc-move docid
+		    (mu4e~mark-check-target target) "-N"))))
 #+end_src
 ** Random Tweaks
 #+begin_src emacs-lisp
   ;; This allows me to use 'helm' to select mailboxes
-(setq mu4e-completing-read-function 'completing-read)
-;; Why would I want to leave my message open after I've sent it?
-(setq message-kill-buffer-on-exit t)
-;; Don't ask for a 'context' upon opening mu4e
-(setq mu4e-context-policy 'pick-first)
-;; Don't ask to quit... why is this the default?
-(setq mu4e-confirm-quit nil)
+  (setq mu4e-completing-read-function 'completing-read)
+  ;; Why would I want to leave my message open after I've sent it?
+  (setq message-kill-buffer-on-exit t)
+  ;; Don't ask for a 'context' upon opening mu4e
+  (setq mu4e-context-policy 'pick-first)
+  ;; Don't ask to quit... why is this the default?
+  (setq mu4e-confirm-quit nil)
 #+end_src
 
 * Reddit
 #+begin_src emacs-lisp
   (use-package md4rd :ensure t
-      :config
-	(add-hook 'md4rd-mode-hook 'md4rd-indent-all-the-lines)
-	  (setq md4rd-subs-active '(emacs lisp+Common_Lisp prolog clojure))
-	   (setq md4rd--oauth-access-token
+    :config
+    (add-hook 'md4rd-mode-hook 'md4rd-indent-all-the-lines)
+    (setq md4rd-subs-active '(emacs lisp+Common_Lisp prolog clojure))
+    (setq md4rd--oauth-access-token
 	  "dK7qKMb50RaIIYLYi_tM2tKMZ5Be7g")
     (setq md4rd--oauth-refresh-token
 	  "dK7qKMb50RaIIYLYi_tM2tKMZ5Be7g")
     (run-with-timer 0 3540 'md4rd-refresh-login))
+#+end_src
+
+* Emacs Application Framework
+** Install
+#+begin_src emacs-lisp
+  (use-package eaf
+    :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
+    :custom
+					  ; See https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
+    (eaf-browser-continue-where-left-off t)
+    (eaf-browser-enable-adblocker t)
+    (browse-url-browser-function 'eaf-open-browser)
+    :config
+    (defalias 'browse-web #'eaf-open-browser)
+    (eaf-bind-key scroll_up "C-n" eaf-pdf-viewer-keybinding)
+    (eaf-bind-key scroll_down "C-p" eaf-pdf-viewer-keybinding)
+    (eaf-bind-key take_photo "p" eaf-camera-keybinding)
+    (eaf-bind-key nil "M-q" eaf-browser-keybinding)) ;; unbind, see more in the Wiki
+#+end_src
+
+#+RESULTS:
+: t
+
+** Configuration
+#+begin_src emacs-lisp
+  (require 'eaf-browser)
+#+end_src
+
+#+RESULTS:
+: eaf-browser
+* Games
+* Music
+** EMMS
+*** install
+#+begin_src emacs-lisp
+  (use-package emms :ensure t)
+  (require 'emms-setup)
+  (emms-all)
+  (emms-default-players)
+  ;; notifications
+  ;; covers
+  (setq emms-browser-covers #'emms-browser-cache-thumbnail-async)
+  (setq emms-browser-thumbnail-small-size 64)
+  (setq emms-browser-thumbnail-medium-size 128)
+  ;; filters
+  (emms-browser-make-filter "all" #'ignore)
+  (emms-browser-make-filter "recent"
+			    (lambda (track) (< 30
+					       (time-to-number-of-days
+						(time-subtract (current-time)
+							       (emms-info-track-file-mtime track))))))
+  (emms-browser-set-filter (assoc "all" emms-browser-filters))
+  ;; history
+  (emms-history-load)
+  ;; libre-fm
+  ;; (emms-librefm-scrobbler-enable)
+#+end_src
+*** config
+#+begin_src emacs-lisp
+  (setq-default
+   emms-source-file-default-directory "/mnt/homeserver/Storage/Music"
+
+   emms-source-playlist-default-format 'm3u
+   emms-playlist-mode-center-when-go t
+   emms-playlist-default-major-mode 'emms-playlist-mode
+   emms-show-format "NP: %s"
+
+   emms-player-list '(emms-player-mpv)
+   emms-player-mpv-environment '("PULSE_PROP_media.role=music")
+   emms-player[[id:06c97e1e-5602-405b-8434-0ce12c44e03f][Guides]]-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null"))
+#+end_src
+
+#+RESULTS:
+| --quiet | --really-quiet | --no-audio-display | --force-window=no | --vo=null |
+
+*** notifications
+#+begin_src emacs-lisp
+  ;; choose D-Bus to disseminate messages, if it is running.
+  (cond
+   ;; test to see if D-Bus notifications are available
+   ((if (and (require 'dbus nil t)
+	     (dbus-ping :session "org.freedesktop.Notifications"))
+	(progn
+	  (setq notify-method 'notify-via-dbus-notifications)
+	  (require 'notifications))))
+   ;; could use the message system otherwise
+   (t (setq notify-method 'notify-via-message)))
+
+  (defun notify-via-notifications (title msg icon)
+    "Send notification with TITLE, MSG via `D-Bus'."
+    (notifications-notify
+     :title title
+     :body msg
+     :app-icon icon
+     :urgency 'low))
+
+  (defun notify-via-messages (title msg)
+    "Send notification with TITLE, MSG to message."
+    (message "APPOINTMENT: %s" msg))
+
+  (defun emms-notifications-dbus (track-name)
+    "Share track name via `D-Bus'."
+    (let ((icon "/usr/share/icons/breeze-dark/categories/32/applications-multimedia.png"))
+      (notify-via-notifications "EMMS is now playing:" track-name icon)))
+
+  (defun emms-notifications-message (track-name)
+    "Share track name via Emacs minibuffer."
+    (message "EMMS is now playing: %s" track-name))
+
+  (setq emms-player-next-function 'emms-notify-and-next)
+
+  (defun emms-notify-and-next ()
+    "Send a notification of track and start next."
+    (emms-next-noerror)
+    (let ((track-name (emms-track-description (emms-playlist-current-selected-track))))
+      (cond
+       ((eq notify-method 'notify-via-dbus-notifications)
+	(emms-notifications-dbus track-name))
+       (t (emms-notifications-message track-name)))))
+
+#+end_src
+*** addons
+**** helm-emms
+#+begin_src emacs-lisp
+  (use-package helm-emms :ensure t)
+#+end_src
+**** org-emms
+#+begin_src emacs-lisp
+  (use-package org-emms :ensure t)
+#+end_src
+* Browsers
+** w3m
+*** install
+#+begin_src emacs-lisp
+  (use-package w3m :ensure t)
+  (use-package helm-w3m :ensure t)
+#+end_src
+**** infor from streaming audio mplayer only
+#+begin_src emacs-lisp
+  (setq  emms-player-mplayer-parameters '("-slave" "-quiet")
+	 emms-player-mplayer-playlist-parameters '("-slave" "-quiet" "-playlist"))
+
+  (defun mplayer-stream-start-listening ()
+    "This emms-player-started-hook checks if the current track is a
+  url and the process playing it is mplayer. If it is then the
+  output filter mplayer-steam-filter is added to the process"
+    (let ((type (emms-track-type (emms-playlist-current-selected-track))))
+      (if (or (eq  type 'url) (eq  type 'streamlist))
+	  (let ((process (get-process emms-player-simple-process-name)))
+	    (if (string= (car (process-command process)) "mplayer")
+		(set-process-filter process 'mplayer-stream-filter))
+	    ))
+      ))
+
+  (add-hook 'emms-player-started-hook 'mplayer-stream-start-listening)
+  (defvar emms-mplayer-info-coding-system 'cp1251)
+  (defmacro emms-mplayer-info-defreg (symname regexp)
+    "Set SYMNAME to be the match for REGEXP."
+    `(if (string-match ,regexp string)
+	 (progn 
+	   (setq ,symname (decode-coding-string (match-string 1 string) emms-mplayer-info-coding-system))
+	   (if (> (length ,symname) 40)
+	       (setq ,symname (concat (substring ,symname 0 37) "..."))))
+       ))
+
+
+  (defun mplayer-stream-filter (proc string)
+    "Checks mplayer output for ICY Info data. If any is found then the StreamTitle
+  option is extracted and written to the track's 'info-title property. Because
+  emms-info-track-description -- the function that creates the track name -- needs a
+  title *and* an artist 'info-artist is set to the stream title (the one you see in
+  emms-streams)."
+    (let ((name "")
+	  (Title "")
+	  (Artist "")
+	  (Album "")
+	  (genre "")
+	  (bitrate "")
+	  (nowplaying "")
+	  (track (emms-playlist-current-selected-track))
+	  )
+      (emms-mplayer-info-defreg name "^Name[ ]*:[ ]*\\(.*\\)\\b[ ]*$") ;;;;describe station
+      (emms-mplayer-info-defreg genre "^Genre[ ]*:[ ]*\\(.*\\)\\b[ ]*$") ;;;;describe station
+      (emms-mplayer-info-defreg bitrate "^Bitrate[ ]*:[ ]*\\(.*\\)\\b[ ]*$") ;;;;describe station
+      (emms-mplayer-info-defreg nowplaying "^ICY Info: StreamTitle='\\(.*\\)'")
+      (emms-mplayer-info-defreg Artist "Artist:[ ]*\\(.*\\)\\b[ ]*$\\|^author:[ ]*\\(.*\\)\\b[ ]*$") ;;;;describe artist
+      (emms-mplayer-info-defreg Album "Album:[ ]*\\(.*\\)\\b[ ]*$") ;;;;describe artist
+      (emms-mplayer-info-defreg Title "Title:[ ]*\\(.*\\)\\b[ ]*$") ;;;;describe artist
+      (if (> (length (concat nowplaying Title)) 0)
+	  (emms-track-set track 'info-title (concat nowplaying Title)))
+      (if (> (length (concat name Album)) 0)
+	  (emms-track-set track 'info-album (concat name Album)))
+      (if (> (length Artist) 0)
+	  (emms-track-set track 'info-artist Artist))
+      (if (not (or (emms-track-get track 'info-artist)
+		   (emms-track-get track 'info-album)
+		   (emms-track-get track 'info-title)))
+	  (emms-track-set track 'info-album
+			  (if (listp (emms-track-get track 'metadata))
+			      (car (emms-track-get track 'metadata))
+			    "")))
+      (emms-track-updated track)
+      ))
+#+end_src
+**** Better track descriptions
+#+begin_src emacs-lisp
+  (defun fg-emms-track-description (track)
+    "Return a somewhat nice track description."
+    (let ((artist (emms-track-get track 'info-artist))
+	  (year (emms-track-get track 'info-year))
+	  (album (emms-track-get track 'info-album))
+	  (tracknumber (emms-track-get track 'info-tracknumber))
+	  (title (emms-track-get track 'info-title)))
+      (cond
+       ((or artist title)
+	(concat (if (> (length artist) 0) artist "Unknown artist") " - "
+		(if (> (length year) 0) year "XXXX") " - "
+		(if (> (length album) 0) album "Unknown album") " - "
+		(if (> (length tracknumber) 0)
+		    (format "%02d" (string-to-number tracknumber))
+		  "XX") " - "
+		(if (> (length title) 0) title "Unknown title")))
+       (t
+	(emms-track-simple-description track)))))
+
+  (setq emms-track-description-function 'fg-emms-track-description)
+#+end_src
+**** dired movie player
+#+begin_src emacs-lisp
+  (defvar dired-mplayer-program "/usr/bin/mplayer")
+
+  (defun dired-mplayer ()
+    (interactive)
+    (let ((file (expand-file-name (dired-get-filename)))
+	  ext files basename dir curr-file idx-file sub-file srt-file
+	  command options)
+      (setq basename (file-name-nondirectory
+		      (file-name-sans-extension file)))
+      (setq dir (file-name-directory file))
+      (setq files (directory-files dir t basename))
+      (delete file files)
+      (while files
+	(setq curr-file (car files))
+	(if (string= (file-name-extension curr-file) "idx")
+	    (setq idx-file curr-file))
+	(if (string= (file-name-extension curr-file) "sub")
+	    (setq sub-file curr-file))
+	(if (string= (file-name-extension curr-file) "srt")
+	    (setq srt-file curr-file))
+	(setq files (cdr files)))
+      (if (and idx-file sub-file)
+	  (setq options (format "-vobsub \"%s\""
+				(file-name-sans-extension idx-file))))
+      (if (and sub-file
+	       (not idx-file))
+	  (setq options (format "-sub \"%s\"" sub-file)))
+      (if (and srt-file
+	       (not sub-file))
+	  (setq options (format "-sub \"%s\"" srt-file)))
+      (setq options (format "%s -font \"%s\" -subfont-text-scale 4
+  -really-quiet" options "c:\\windows\\fonts\\arial.ttf"))
+      (setq command (format "\"%s\" \"%s\" %s" dired-mplayer-program
+			    file options))
+      (if (y-or-n-p (format "Run command %s?" command))
+	  (shell-command command))))
 #+end_src
