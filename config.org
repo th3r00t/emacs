@@ -348,7 +348,6 @@ https://www.orgroam.com/manual.html#Getting-Started
     (helm-ff-zgrep-1 (list (or directory default-directory)) t))
 #+end_src
 ** w3m-open-link-or-image-in-chromium
-#+begin_src emacs-lisp
   (defun w3m-open-link-or-image-in-chromium ()
   "Open the current link or image in Firefox."
   (interactive)
@@ -360,46 +359,6 @@ https://www.orgroam.com/manual.html#Getting-Started
 	  (emms-playlist-insert-track track)))
  (browse-url-generic url))))
 (define-key w3m-mode-map "z" 'w3m-open-link-or-image-in-chromium)
-#+end_src
-** emms-youtube-walk
-#+begin_src emacs-lisp
-  (defun emms-youtube-walk (node)
-      (when (listp node)
-	(let* ((title (car (nthcdr 2 (car (xml-get-children node 'title)))))
-	       (group (car (xml-get-children node 'media:group)))
-	       (description  (car (nthcdr 2 (car (xml-get-children group 'media:description)))))
-	       (url (xml-get-attribute (car (xml-get-children group 'media:player)) 'url))
-	       (thumbnail (xml-get-attribute (car (xml-get-children group 'media:thumbnail)) 'url)))
-	  (insert (concat "<li><a href=\"" url "\"><img src=\""thumbnail"\" ></a><b>"title"</b></li>"))
-	  )))
-#+end_src
-** emms-add-youtube
-#+begin_src emacs-lisp
-  (defun emms-add-youtube (search)
-    (interactive "sYoutube Search:")
-    (let* (
-	   (link (concat "https://gdata.youtube.com/feeds/api/videos?q='" search "'&max-results=50&orderby=relevance&format=5&prettyprint=true&v=2&fields=entry(title,media:group(media:player,media:description,media:thumbnail[@yt:name='hqdefault'](@url)))"))
-	   )
-      (url-retrieve  link 
-		     (lambda (s) 
-		       (beginning-of-buffer) 
-		       (search-forward "<" ) 
-		       (beginning-of-line) 
-		       (setq feed (xml-get-children (car (xml-parse-region (point) (point-max))) 'entry))
-		       (erase-buffer)
-		       (insert (concat "<html><head><title>Youtube Client "  "</title></head><body><ol>"))
-		       (mapc 'emms-youtube-walk feed)
-		       (insert "</ol></body></html>")
-		       (let ((filename (concat (make-temp-file "w3m-") ".html")))
-			 (unwind-protect
-			     (progn
-			       (write-region (point-min) (point-max) filename)
-			       (kill-buffer (current-buffer))
-					  ;			 (w3m-copy-buffer nil nil nil t)
-			       (w3m-find-file filename))
-			   (delete-file filename)))
-		       ))))
-#+end_src
 * Ui Configurations
 Configuration settings that adjust the user experience
 ** Hydra
@@ -812,6 +771,31 @@ https://magit.vc/
 #+begin_src emacs-lisp
   (use-package magit :ensure t)
 #+end_src
+** git-gutter
+#+begin_src emacs-lisp
+  (use-package git-gutter+
+    :ensure t
+    :init (global-git-gutter+-mode)
+    :config (progn
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x n") 'git-gutter+-next-hunk)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x p") 'git-gutter+-previous-hunk)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x v =") 'git-gutter+-show-hunk)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x r") 'git-gutter+-revert-hunks)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x t") 'git-gutter+-stage-hunks)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x c") 'git-gutter+-commit)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x C") 'git-gutter+-stage-and-commit)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x C-y") 'git-gutter+-stage-and-commit-whole-buffer)
+	      ;; (define-key git-gutter+-mode-map (kbd "C-x U") 'git-gutter+-unstage-whole-buffer)
+	      (setq git-gutter-window-width 1)
+	      (setq git-gutter+-separator-sign "  ")
+	      (set-face-foreground 'git-gutter+-separator "yellow")
+	      )
+    :diminish (git-gutter+-mode . "gg"))
+#+end_src
+
+#+RESULTS:
+: t
+
 * Development Plugins (General)
 ** Indent Handling
 #+begin_src emacs-lisp
@@ -1727,3 +1711,10 @@ Alert for multiple email accounts
       (if (y-or-n-p (format "Run command %s?" command))
 	  (shell-command command))))
 #+end_src
+
+* Discord
+#+begin_src emacs-lisp
+  (use-package elcord :ensure t :init (require 'elcord)(elcord-mode))
+#+end_src
+
+#+RESULTS:
