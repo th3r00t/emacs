@@ -6,20 +6,21 @@ https://orgmode.org/manual/Initial-visibility.html
 #+begin_src emacs-lisp
   (setq evil-want-keybinding nil)
 #+end_src
-* Notes
+* Emacs Configuration
+** Notes
 https://orgmode.org/manual/Structure-Templates.html
 Insert Source Block C-c C-,
-** To Be Installed
+*** To Be Installed
 org-journal
 emacs application framework
 mu4e
 projectile
-** Things to map
+*** Things to map
 magit
 kill ring
 ag
-* Org Mode Configs
-** General
+** Org Mode Configs
+*** General
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist '("\.org$" . org-mode))
   (global-set-key (kbd "C-c ;") 'org-store-link)
@@ -27,7 +28,7 @@ ag
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "C-c c") 'org-capture)
 #+end_src
-** Org-Babel
+*** Org-Babel
 #+begin_src emacs-lisp
   (require 'ob-js)
   (org-babel-do-load-languages
@@ -35,9 +36,9 @@ ag
    '((python . t) (C . t) (shell . t) (sql . t) (emacs-lisp . t) (sqlite . t) (R . t)))
   (add-to-list 'org-babel-tangle-lang-exts '("js" . "js"))
 #+end_src
-** Org-Roam
+*** Org-Roam
 https://www.orgroam.com/manual.html#Getting-Started
-*** install
+**** install
 #+begin_src emacs-lisp
   (use-package org-roam
     :ensure t
@@ -50,11 +51,11 @@ https://www.orgroam.com/manual.html#Getting-Started
 #+RESULTS:
 : t
 
-*** config
+**** config
 #+begin_src emacs-lisp
 #+end_src
-** Org-Projectile
-*** use-package
+*** Org-Projectile
+**** use-package
 #+begin_src emacs-lisp
   (use-package org-projectile
     :config
@@ -76,8 +77,8 @@ https://www.orgroam.com/manual.html#Getting-Started
     )
 #+end_src
 
-** Org-Evil
-*** use-package
+*** Org-Evil
+**** use-package
 #+begin_src emacs-lisp
   (use-package evil-org
     :ensure t
@@ -121,8 +122,8 @@ https://www.orgroam.com/manual.html#Getting-Started
     ("K" org-shiftup)
     ("t" org-todo))
 #+end_src
-** Org-Journal
-*** use-package
+*** Org-Journal
+**** use-package
 #+begin_src emacs-lisp
   (use-package org-journal :ensure t :init (setq org-journal-prefix-key "C-c j "))
   (setq org-journal-dir "~/org/journal/")
@@ -130,8 +131,27 @@ https://www.orgroam.com/manual.html#Getting-Started
   (setq org-journal-enable-agenda-integration t)
   (require 'org-journal)
 #+end_src
-** Capture Templates
-*** Journal
+*** Org-Crypt
+#+begin_src emacs-lisp
+  (require 'org-crypt)
+  (org-crypt-use-before-save-magic)
+  (setq org-tags-exclude-from-inheritance '("crypt"))
+
+  (setq org-crypt-key "D59F9D29BC865B11B4DAF5EF16F20F2A769CF74C")
+  ;; GPG key to use for encryption
+  ;; Either the Key ID or set to nil to use symmetric encryption.
+
+  (setq auto-save-default nil)
+  ;; Auto-saving does not cooperate with org-crypt.el: so you need to
+  ;; turn it off if you plan to use org-crypt.el quite often.  Otherwise,
+  ;; you'll get an (annoying) message each time you start Org.
+
+  ;; To turn it off only locally, you can insert this:
+  ;;
+  ;; # -*- buffer-auto-save-file-name: nil; -*-
+#+end_src
+*** Capture Templates
+**** Journal
 #+begin_src emacs-lisp
   (defun org-journal-find-location ()
     ;; Open today's journal, but specify a non-nil prefix argument in order to
@@ -145,7 +165,7 @@ https://www.orgroam.com/manual.html#Getting-Started
 				 "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
 				 :jump-to-captured t :immediate-finish t)))
 #+end_src
-*** Org roam capture
+**** Org roam capture
 #+begin_src emacs-lisp
   (setq org-roam-capture-templates
 	'(("d" "default" plain
@@ -171,19 +191,19 @@ https://www.orgroam.com/manual.html#Getting-Started
 #+RESULTS:
 | d | default | plain | %? | :if-new | (file+head %<%Y%m%d%H%M%S>-${slug}.org #+title: ${title} |
 
-**** Future Capture
+***** Future Capture
 #+begin_src emacs-lisp
   
 #+end_src
-* Custom Functions
-** Org goto project todo
+** Custom Functions
+*** Org goto project todo
 #+begin_src emacs-lisp
   (defun my/org-projectile-goto-project-file ()
     "Open the TODO.org file for the current project."
     (interactive)
     (org-projectile-goto-location-for-project (projectile-project-name)))
 #+end_src
-** org-roam-node-insert-immediate
+*** org-roam-node-insert-immediate
 #+begin_src emacs-lisp
   (defun org-roam-node-insert-immediate (arg &rest args)
     (interactive "P")
@@ -195,20 +215,20 @@ https://www.orgroam.com/manual.html#Getting-Started
 #+RESULTS:
 : org-roam-node-insert-immediate
 
-** Reload Config
+*** Reload Config
 #+begin_src emacs-lisp
   (defun reload-config ()
     (interactive)
     (load-file "~/.emacs.d/init.el"))
 #+end_src
-** Sudo Find File
+*** Sudo Find File
 #+begin_src emacs-lisp
   (defun sudo-find-file (file-name)
     (interactive "Sudo Find File: ")
     (let ((tramp-file-name (concat "/sudo::" (expand-file-name file-name))))
       (find-file tramp-file-name)))
 #+end_src
-** sidebar-toggle
+*** sidebar-toggle
 #+begin_src emacs-lisp
   (defun sidebar-toggle ()
     "Toggle both `dired-sidebar' and `ibuffer-sidebar'."
@@ -216,18 +236,18 @@ https://www.orgroam.com/manual.html#Getting-Started
     (dired-sidebar-toggle-sidebar)
     (ibuffer-sidebar-toggle-sidebar))
 #+end_src
-** Reload Config
+*** Reload Config
 #+begin_src emacs-lisp
   (defun reconfigure-emacs ()
     (org-babel-load-file (expand-file-name "config.org" user-emacs-directory))
     )
 #+end_src
 
-** Kill Journal Buffer
+*** Kill Journal Buffer
 #+begin_src emacs-lisp
 #+end_src
-** helm/functions
-*** helm/eselect-grep
+*** helm/functions
+**** helm/eselect-grep
 #+begin_src emacs-lisp
   (defun helm/eselect-grep ()
     (interactive)
@@ -245,7 +265,7 @@ https://www.orgroam.com/manual.html#Getting-Started
       (message "Switched to %s" (helm-grep-command))))
 
 #+end_src
-*** helm/turn-on-header-line
+**** helm/turn-on-header-line
 #+begin_src emacs-lisp
   (defun helm/turn-on-header-line ()
     (interactive)
@@ -255,7 +275,7 @@ https://www.orgroam.com/manual.html#Getting-Started
     (add-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)
     )
 #+end_src
-*** helm/turn-off-header-line
+**** helm/turn-off-header-line
 #+begin_src emacs-lisp
   (defun helm/turn-off-header-line ()
     (interactive)
@@ -265,7 +285,7 @@ https://www.orgroam.com/manual.html#Getting-Started
     (remove-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)
     )
 #+end_src
-*** helm/occur-which-func
+**** helm/occur-which-func
 #+begin_src emacs-lisp
   (defun helm/occur-which-func ()
     (interactive)
@@ -277,63 +297,63 @@ https://www.orgroam.com/manual.html#Getting-Started
       (when (eq major-mode 'emacs-lisp-mode)
 	(message "[%s]" (which-function)))))
 #+end_src
-*** helm-find-files-in-frame
+**** helm-find-files-in-frame
 #+begin_src emacs-lisp
   (defun helm-find-files-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-find-files)))
 #+end_src
-*** helm-M-x-in-frame
+**** helm-M-x-in-frame
 #+begin_src emacs-lisp
   (defun helm-M-x-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-M-x)))
 #+end_src
-*** helm-occur-in-frame
+**** helm-occur-in-frame
 #+begin_src emacs-lisp
   (defun helm-occur-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-occur)))
 #+end_src
-*** helm-mini-in-frame
+**** helm-mini-in-frame
 #+begin_src emacs-lisp
   (defun helm-mini-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-mini)))
 #+end_src
-*** helm-do-grep-ag-in-frame
+**** helm-do-grep-ag-in-frame
 #+begin_src emacs-lisp
   (defun helm-do-grep-ag-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-do-grep-ag)))
 #+end_src
-*** helm-do-git-grep-in-frame
+**** helm-do-git-grep-in-frame
 #+begin_src emacs-lisp
   (defun helm-do-git-grep-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-grep-do-git-grep)))
 #+end_src
-*** helm-imenu-in-frame
+**** helm-imenu-in-frame
 #+begin_src emacs-lisp
   (defun helm-imenu-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-imenu)))
 #+end_src
-*** helm-top-in-frame
+**** helm-top-in-frame
 #+begin_src emacs-lisp
   (defun helm-top-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-top)))
 #+end_src
-*** helm/zsh-history
+**** helm/zsh-history
 #+begin_src emacs-lisp
   (defun helm/zsh-history ()
     (interactive)
@@ -347,7 +367,7 @@ https://www.orgroam.com/manual.html#Getting-Started
     (interactive)
     (helm-ff-zgrep-1 (list (or directory default-directory)) t))
 #+end_src
-** w3m-open-link-or-image-in-chromium
+*** w3m-open-link-or-image-in-chromium
   (defun w3m-open-link-or-image-in-chromium ()
   "Open the current link or image in Firefox."
   (interactive)
@@ -359,51 +379,51 @@ https://www.orgroam.com/manual.html#Getting-Started
 	  (emms-playlist-insert-track track)))
  (browse-url-generic url))))
 (define-key w3m-mode-map "z" 'w3m-open-link-or-image-in-chromium)
-* Ui Configurations
+** Ui Configurations
 Configuration settings that adjust the user experience
-** Hydra
-*** use-package
+*** Hydra
+**** use-package
 #+begin_src emacs-lisp
   (use-package hydra :ensure t :config (require 'hydra))
 #+end_src
 
-** Font
+*** Font
 #+begin_src emacs_lisp
     (set-frame-font "FiraCode Nerd Font Mono 20" nil t)
     (set-default-font "FiraCode Nerd Font Mono 20" nil t)
     (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-20" ))
 #+end_src
-** Window systems -- remove visual cruft
+*** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
   (tooltip-mode 1)
   (tool-bar-mode -1)
   (menu-bar-mode -1)
   (scroll-bar-mode -1)
 #+end_src
-** Line Numebers
+*** Line Numebers
 #+begin_src emacs-lisp
   (global-display-line-numbers-mode)
 #+end_src
-** Highlight Line
+*** Highlight Line
 #+begin_src emacs-lisp
   (global-hl-line-mode)
 #+end_src
-** AutoPairs
+*** AutoPairs
 #+begin_src emacs-lisp
   (electric-pair-mode)
 #+end_src
-** Rainbow Delimiters
+*** Rainbow Delimiters
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
     :ensure t :init (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
-** Rainbow Colors
+*** Rainbow Colors
 #+begin_src emacs-lisp
   (use-package rainbow-mode
     :ensure t
     :config (rainbow-mode 1))
 #+end_src
-** Evil Mode
+*** Evil Mode
 https://github.com/emacs-evil/evil-collection
 https://github.com/cofi/evil-leader
 #+begin_src emacs-lisp
@@ -441,8 +461,8 @@ https://github.com/cofi/evil-leader
     (advice-add 'undo-auto--last-boundary-amalgamating-number
 		:override #'ignore)
 #+end_src
-*** use gv to reselect visual selection after actions
-** Theming
+**** use gv to reselect visual selection after actions
+*** Theming
 #+begin_src emacs-lisp
   (use-package helm-themes
     :ensure t)
@@ -479,15 +499,15 @@ https://github.com/cofi/evil-leader
     )
   (use-package spacemacs-theme :ensure t)
 #+end_src
-*** Enable Theme
+**** Enable Theme
 #+begin_src emacs-lisp
   (load-theme 'spacemacs-dark t)
 #+end_src
-** Modeline
-*** Space Line
-**** Documentation
+*** Modeline
+**** Space Line
+***** Documentation
 [[https://github.com/TheBB/spaceline]]
-**** Install
+***** Install
 #+begin_src emacs-lisp
   (use-package spaceline :ensure t :config (require 'spaceline-config) :init (spaceline-spacemacs-theme))
 #+end_src
@@ -495,7 +515,7 @@ https://github.com/cofi/evil-leader
 #+RESULTS:
 : t
 
-**** Configuration
+***** Configuration
 #+begin_src emacs-lisp
   (spaceline-compile
 					  ; left side
@@ -543,14 +563,14 @@ https://github.com/cofi/evil-leader
 #+RESULTS:
 : #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ())
 
-*** Fancy Battery
+**** Fancy Battery
 #+begin_src emacs-lisp
   (use-package fancy-battery :ensure t :init (add-hook 'after-init-hook #'fancy-battery-mode))
 #+end_src
 
 #+RESULTS:
 
-** Emacs Startup
+*** Emacs Startup
 #+begin_src emacs-lisp
   (use-package dashboard
     :ensure t
@@ -577,7 +597,7 @@ https://github.com/cofi/evil-leader
     ;; "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt"
     )
 #+end_src
-** iBuffer
+*** iBuffer
 #+begin_src emacs-lisp
   (setq ibuffer-saved-filter-groups
 	(quote (("default"
@@ -622,7 +642,7 @@ https://github.com/cofi/evil-leader
   (use-package ibuffer-tramp :ensure t)
   (use-package ibuffer-projectile :ensure t)
 #+end_src
-** Dired
+*** Dired
 #+begin_src emacs-lisp
   (use-package dired-sidebar
     :ensure t
@@ -640,14 +660,14 @@ https://github.com/cofi/evil-leader
     (setq dired-sidebar-use-custom-font t)
     )
 #+end_src
-** Fill Column
-*** install
+*** Fill Column
+**** install
 #+begin_src emacs-lisp
   (use-package fill-column-indicator :ensure t
     :init (require 'fill-column-indicator)
     )
 #+end_src
-*** TODO configuration
+**** TODO configuration
 #+begin_src emacs-lisp
   (setq fci-rule-width 4)
   (setq fci-rule-color "darkblue")
@@ -656,18 +676,18 @@ https://github.com/cofi/evil-leader
 #+RESULTS:
 | fci-mode | lsp-deferred | hs-minor-mode | rainbow-delimiters-mode |
 
-* General Configurations
-** Default Overrides
-*** yes-no
-**** 
+** General Configurations
+*** Default Overrides
+**** yes-no
+***** 
 #+begin_src emacs-lisp
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
-** Use-Package Configuration
+*** Use-Package Configuration
 #+begin_src emacs-lisp
   (setq use-package-always-ensure t)
 #+end_src
-** Bakup Files
+*** Bakup Files
 #+begin_src emacs-lisp
   (setq
    backup-by-copying t      ; don't clobber symlinks
@@ -678,18 +698,18 @@ https://github.com/cofi/evil-leader
    kept-old-versions 2
    version-control t)       ; use versioned backups
 #+end_src
-** Save Last Position
+*** Save Last Position
 #+begin_src emacs-lisp
   (setq save-place-file "~/.emacs.d/saveplace")
   (setq-default save-place t)
 #+end_src
-** Remote Editing
-*** Tramp Mode
+*** Remote Editing
+**** Tramp Mode
 https://www.emacswiki.org/emacs/TrampMode
 #+begin_src emacs-lip
   (setq tramp-default-method "ssh")
 #+end_src
-** Adjust Yank and Paste
+*** Adjust Yank and Paste
 https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-emacs
 #+begin_src emacs-lisp
   (defun clipboard-yank-my (&rest args)
@@ -718,11 +738,11 @@ https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-ema
     ;; (setq deactivate-mark nil)
     )
 #+end_src
-** Follow Symlinks
+*** Follow Symlinks
 #+begin_src emacs-lisp
   (setq find-file-visit-truename t)
 #+end_src
-** Folding
+*** Folding
 #+begin_src emacs-lisp
   ;;(use-package origami :ensure t :config (require 'origami) :init (setq global-origami-mode 't))
   (add-hook 'prog-mode-hook #'hs-minor-mode)
@@ -732,7 +752,7 @@ https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-ema
 #+RESULTS:
 | (lambda nil (evil-close-folds)) | evil-close-folds | hs-minor-mode | hs-mo=inor-mode | lsp-deferred | rainbow-delimiters-mode |
 
-** Undo
+*** Undo
 #+begin_src emacs-lisp
   (use-package undo-tree :ensure t)
   (global-undo-tree-mode)
@@ -740,14 +760,18 @@ https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-ema
 
 #+RESULTS:
 
-* Registers
+*** Multiple Cursors
+#+begin_src emacs-lisp
+  (use-package multiple-cursors :ensure t)
+#+end_src
+** Registers
 #+begin_src emacs-lisp
   (set-register ?e (cons 'file "~/.emacs.d/"))
   (set-register ?z (cons 'file "~/.zshrc"))
   (set-register ?x (cons 'file "~/.xinitrc"))
 #+end_src
-* File Management
-** NeoTree
+** File Management
+*** NeoTree
 https://github.com/jaypei/emacs-neotree
 #+begin_src emacs-lisp
   (use-package neotree
@@ -755,8 +779,8 @@ https://github.com/jaypei/emacs-neotree
     :config
     (setq neo-theme (if (display-graphic-p) 'icons 'arrow)))
 #+end_src
-* Project Management
-** Projectile
+** Project Management
+*** Projectile
 https://projectile.mx/
 #+begin_src emacs-lisp
   (use-package projectile
@@ -766,38 +790,13 @@ https://projectile.mx/
   (use-package helm-projectile
     :ensure t)
 #+end_src
-** Magit
+*** Magit
 https://magit.vc/
 #+begin_src emacs-lisp
   (use-package magit :ensure t)
 #+end_src
-** git-gutter
-#+begin_src emacs-lisp
-  (use-package git-gutter+
-    :ensure t
-    :init (global-git-gutter+-mode)
-    :config (progn
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x n") 'git-gutter+-next-hunk)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x p") 'git-gutter+-previous-hunk)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x v =") 'git-gutter+-show-hunk)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x r") 'git-gutter+-revert-hunks)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x t") 'git-gutter+-stage-hunks)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x c") 'git-gutter+-commit)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x C") 'git-gutter+-stage-and-commit)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x C-y") 'git-gutter+-stage-and-commit-whole-buffer)
-	      ;; (define-key git-gutter+-mode-map (kbd "C-x U") 'git-gutter+-unstage-whole-buffer)
-	      (setq git-gutter-window-width 1)
-	      (setq git-gutter+-separator-sign "  ")
-	      (set-face-foreground 'git-gutter+-separator "yellow")
-	      )
-    :diminish (git-gutter+-mode . "gg"))
-#+end_src
-
-#+RESULTS:
-: t
-
-* Development Plugins (General)
-** Indent Handling
+** Development Plugins (General)
+*** Indent Handling
 #+begin_src emacs-lisp
   ;;(use-package auto-indent-mode
   ;;    :ensure t)
@@ -832,8 +831,8 @@ https://magit.vc/
 		    (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
 
-** Lsp
-*** Install
+*** Lsp
+**** Install
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :ensure t
@@ -847,7 +846,7 @@ https://magit.vc/
   (use-package lsp-ui :commands lsp-ui-mode :ensure t)
   (use-package helm-lsp :commands helm-lsp-workspace-symbol :ensure t)
 #+end_src
-*** Configure
+**** Configure
 #+begin_src emacs-lisp
   (setq lsp-ui-sideline-show-diagnostics 1)
   (setq lsp-ui-sideline-show-hover t)
@@ -864,13 +863,13 @@ https://magit.vc/
   (setq lsp-completion-show-kind t)
   (setq lsp-enable-snippet t)
 #+end_src
-** DAP
-*** Install
+*** DAP
+**** Install
 #+begin_src emacs-lisp
   (use-package dap-mode
     :ensure t)
 #+end_src
-*** Configuration
+**** Configuration
 #+begin_src emacs-lisp
   (use-package dap-mode
     :after lsp-mode
@@ -888,7 +887,7 @@ https://magit.vc/
   (dap-tooltip-mode 1)
   (dap-ui-controls-mode 1)
 #+end_src
-** Cmake
+*** Cmake
 #+begin_src emacs-lisp
   (use-package cmake-project
     :ensure t)
@@ -900,16 +899,16 @@ https://magit.vc/
   (add-hook 'c-mode-hook 'maybe-cmake-project-mode)
   (add-hook 'c++-mode-hook 'maybe-cmake-project-mode)
 #+end_src
-** FlyMake
+*** FlyMake
 #+begin_src emacs-lisp
   (use-package flymake
     :ensure t)
 #+end_src
-** Flycheck
+*** Flycheck
 #+begin_src emacs-lisp
   (use-package flycheck :ensure t :init (global-flycheck-mode t))
 #+end_src
-** VDiff
+*** VDiff
 #+begin_src emacs-lisp
   (use-package vdiff :ensure t :config (require 'vdiff) (define-key vdiff-mode-map (kbd "C-x") vdiff-mode-prefix-map))
 #+end_src
@@ -917,22 +916,22 @@ https://magit.vc/
 #+RESULTS:
 : t
 
-** Xml
+*** Xml
 #+begin_src emacs-lisp
   (use-package xml-format :ensure t :demand t :after nxml-mode)
 #+end_src
-** YaS Snippets
+*** YaS Snippets
 #+begin_src emacs-lisp
   (use-package yasnippet :ensure t :init (require 'yasnippet) :config (yas-global-mode 1))
 #+end_src
-** Doom Snippets
+*** Doom Snippets
 #+begin_src emacs-lisp
   (use-package doom-snippets
     :after yasnippet
     :straight (doom-snippets :type git :host github :repo "hlissner/doom-snippets" :files ("*.el" "*")))
 #+end_src
-* Development Plugins (Languages)
-** Godot Script
+** Development Plugins (Languages)
+*** Godot Script
 https://github.com/godotengine/emacs-gdscript-mode
 https://langroudi.co.uk/post/emacs_godot_csharp/
 #+begin_src emacs-lisp
@@ -944,7 +943,7 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 	       :repo "godotengine/emacs-gdscript-mode"))
   (setq gdscript-godot-executable "/usr/bin/godot-mono")
 #+end_src
-*** Supress unknown notifications
+**** Supress unknown notifications
 #+begin_src emacs-lisp
   (defun lsp--gdscript-ignore-errors (original-function &rest args)
     "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
@@ -959,7 +958,7 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
   ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
   (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 #+end_src
-** Csharp
+*** Csharp
 #+begin_src emacs-lisp
   (use-package tree-sitter :ensure t)
   (use-package tree-sitter-langs :ensure t)
@@ -970,7 +969,7 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
     :config
     (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode)))
 #+end_src
-** C++
+*** C++
 #+begin_src emacs-lisp
   (use-package yasnippet-snippets :ensure t :config (require 'yasnippet)(yas-global-mode 1))
   (use-package modern-cpp-font-lock :ensure t)
@@ -989,22 +988,18 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
   ;; OPTIONAL, some users need specify extra flags forwarded to compiler
   (setq cppcm-extra-preprocss-flags-from-user '("-I/usr/src/linux/include" "-DNDEBUG"))
 #+end_src
-
-#+RESULTS:
-: t
-
-** Python
+*** Python
 #+begin_src emacs-lisp
 #+end_src
-* Completion System
-** Pop-up
+** Completion System
+*** Pop-up
 #+begin_src emacs-lisp
   (use-package popup
     :ensure t)
   (use-package popup-complete
     :ensure t)
 #+end_src
-** Autocomplete
+*** Autocomplete
 #+begin_src emacs-lisp
   (use-package auto-complete
     :ensure t)
@@ -1018,9 +1013,9 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
   (require 'auto-complete-config)
   (ac-config-default)
 #+end_src
-** Company
+*** Company
 https://company-mode.github.io/
-*** Install
+**** Install
 #+begin_src emacs-lisp
   (use-package company
     :ensure t
@@ -1031,7 +1026,7 @@ https://company-mode.github.io/
   (use-package company-gtags :ensure t)
   (use-package company-elisp :ensure t)
 #+end_src
-*** Configure
+**** Configure
 #+begin_src emacs-lisp
   
   (setq company-backends (delete 'company-semantic company-backends))
@@ -1040,11 +1035,11 @@ https://company-mode.github.io/
   (add-to-list 'company-backends 'company-c-headers)
   (add-to-list 'company-c-headers-path-system "/usr/include/c++/12.1.1/")
 #+end_src
-** Helm
+*** Helm
 https://github.com/emacs-helm/helm/wiki
 http://tuhdo.github.io/helm-intro.html
 https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
-*** Install
+**** Install
 #+begin_src emacs-lisp
   (use-package helm
     :ensure t
@@ -1057,8 +1052,8 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
     )
   (use-package ggtags :ensure t :init (require 'setup-ggtags))
 #+end_src
-*** Configure
-**** Helm General
+**** Configure
+***** Helm General
 #+begin_src emacs-lisp
   ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
   ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
@@ -1099,7 +1094,7 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
 	helm-echo-input-in-header-line t)
   (when (executable-find "curl") (setq helm-google-suggest-use-curl-p t))
 #+end_src
-**** Helm Gtags
+***** Helm Gtags
 #+begin_src emacs-lisp
   (setq
    helm-gtags-ignore-case t
@@ -1125,22 +1120,22 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
   (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
   (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
 #+end_src
-*** Helm Silver Searcher
+**** Helm Silver Searcher
 https://github.com/emacsorphanage/helm-ag
 #+begin_src emacs-lisp
   (use-package helm-ag
     :ensure t
     )  
 #+end_src
-** Speedbar
+*** Speedbar
 #+begin_src emacs-lisp
   (use-package sr-speedbar :ensure t)
 #+end_src
 
 #+RESULTS:
 
-* Key Bindings
-** Which Key
+** Key Bindings
+*** Which Key
 https://github.com/justbur/emacs-which-key
 #+begin_src emacs-lisp
   (use-package which-key
@@ -1148,84 +1143,91 @@ https://github.com/justbur/emacs-which-key
     :config
     (which-key-mode))
 #+end_src
-** Macros
-*** Execute a shell command and insert return
+*** Macros
+**** Execute a shell command and insert return
 #+begin_src emacs-lisp
   (fset 'exec2point
 	(kmacro-lambda-form [?\C-u ?\M-! ?\C-x ?q return] 0 "%d"))
 #+end_src
-** Bindings
+*** Bindings
 https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
 #+begin_src emacs-lisp
-  (global-set-key [C-tab] 'sidebar-toggle)
-  (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
-  (global-set-key (kbd "C-c n f") 'org-roam-node-find)
-  (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
-  (global-set-key (kbd "C-c n I") 'org-roam-node-insert-immediate)
-  (global-set-key (kbd "C-c n c") 'org-roam-capture)
-  (global-set-key (kbd "C-c n C") 'org-capture)
-  (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
-  (global-set-key (kbd "C-c o") 'helm-occur)
-  (global-set-key (kbd "C-; ;") 'exec2point)
-  (global-set-key (kbd "C-; t t") 'helm-top)
-  (global-set-key (kbd "C-; t T") 'helm-top-in-frame)
-  (global-set-key (kbd "C-; m p") 'emms-metaplaylist-mode-go)
-  (global-set-key (kbd "C-; m h") 'helm-emms)
-  (global-set-key (kbd "C-; m s") 'emms-stop)
-  (global-set-key (kbd "C-; m S") 'emms-start)
-
-  (define-key yas-minor-mode-map (kbd "C-SPC") yas-maybe-expand)
-  (evil-leader/set-key
-    "b" '("Buffers" . (keymap))
-    "b b" 'helm-buffers-list
-    "b n" 'next-buffer
-    "b p" 'previous-buffer
-    "b e" 'eval-buffer
-    "b k" 'kill-buffer
-    "d" '("Develop" . (keymap))
-    "d d" 'dap-debug
-    "d h" 'dap-hydra
-    "d b b" 'dap-breakpoint-toggle
-    "d r" 'dap-ui-repl
-    "f" '("Files" . (keymap))
-    "f f" 'helm-find-files
-    "f s" 'sudo-find-file
-    "k k" 'helm-show-kill-ring
-    "t" '("Toggles" . (keymap))
-    "t f" 'neotree-toggle
-    "t t" 'vterm-toggle
-    "t T" 'tool-bar-mode
-    "t M" 'menu-bar-mode
-    "t s" 'lsp-treemacs-symbols
-    "t n" 'linum-mode
-    "o" '("Org" . (keymap))
-    "o t" 'todo-show
-    "p" '("Projects" . (keymap))
-    "p a" 'projectile-add-known-project
-    "p h" 'helm-projectile
-    "p p" 'projectile-command-map
-    "q" '("Emacs Ops" . (keymap))
-    "q f" 'delete-frame
-    "q q" 'evil-quit
-    "q r" 'reload-config
-    "r" '("Registers" . (keymap))
-    "r r" 'helm-register
-    "TAB" '("Tabs" . (keymap))
-    "TAB TAB" 'tab-new
-    "TAB n" 'tab-next
-    "TAB p" 'tab-previous
-    "TAB l" 'tab-list
-    "T" '("Theming" . (keymap))
-    "T x" 'theme-magic-from-emacs
-    "T T" 'helm-themes
-    "d x w" 'delete-trailing-whitespace))
+    (global-set-key [C-tab] 'sidebar-toggle)
+    (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
+    (global-set-key (kbd "C-c n f") 'org-roam-node-find)
+    (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
+    (global-set-key (kbd "C-c n I") 'org-roam-node-insert-immediate)
+    (global-set-key (kbd "C-c n c") 'org-roam-capture)
+    (global-set-key (kbd "C-c n C") 'org-capture)
+    (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
+    (global-set-key (kbd "C-c o") 'helm-occur)
+    (global-set-key (kbd "C-; ;") 'exec2point)
+    (global-set-key (kbd "C-; t t") 'helm-top)
+    (global-set-key (kbd "C-; t T") 'helm-top-in-frame)
+    (global-set-key (kbd "C-; m p") 'emms-metaplaylist-mode-go)
+    (global-set-key (kbd "C-; m h") 'helm-emms)
+    (global-set-key (kbd "C-; m s") 'emms-stop)
+    (global-set-key (kbd "C-; m S") 'emms-start)
+    (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+    (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+  (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
+    (global-set-key (kbd "M-[") 'insert-pair)
+(global-set-key (kbd "M-{") 'insert-pair)
+(global-set-key (kbd "M-\"") 'insert-pair)
+    (define-key yas-minor-mode-map (kbd "C-SPC") yas-maybe-expand)
+    (evil-leader/set-key
+      "b" '("Buffers" . (keymap))
+      "b b" 'helm-buffers-list
+      "b n" 'next-buffer
+      "b p" 'previous-buffer
+      "b e" 'eval-buffer
+      "b k" 'kill-buffer
+      "d" '("Develop" . (keymap))
+      "d d" 'dap-debug
+      "d h" 'dap-hydra
+      "d b b" 'dap-breakpoint-toggle
+      "d r" 'dap-ui-repl
+      "f" '("Files" . (keymap))
+      "f f" 'helm-find-files
+      "f s" 'sudo-find-file
+      "k k" 'helm-show-kill-ring
+      "t" '("Toggles" . (keymap))
+      "t f" 'neotree-toggle
+      "t t" 'vterm-toggle
+      "t T" 'tool-bar-mode
+      "t M" 'menu-bar-mode
+      "t s" 'lsp-treemacs-symbols
+      "t n" 'linum-mode
+      "o" '("Org" . (keymap))
+      "o t" 'todo-show
+      "p" '("Projects" . (keymap))
+      "p a" 'projectile-add-known-project
+      "p h" 'helm-projectile
+      "p p" 'projectile-command-map
+      "q" '("Emacs Ops" . (keymap))
+      "q f" 'delete-frame
+      "q q" 'evil-quit
+      "q r" 'reload-config
+      "r" '("Registers" . (keymap))
+      "r r" 'helm-register
+      "TAB" '("Tabs" . (keymap))
+      "TAB TAB" 'tab-new
+      "TAB n" 'tab-next
+      "TAB p" 'tab-previous
+      "TAB l" 'tab-list
+      "T" '("Theming" . (keymap))
+      "T x" 'theme-magic-from-emacs
+      "T T" 'helm-themes
+      "d x w" 'delete-trailing-whitespace))
 #+end_src
 
 #+RESULTS:
 
-* Help System
+** Help System
 
-** Helpfull
+*** Helpfull
 https://github.com/Wilfred/helpful
 #+begin_src emacs-lisp
   (use-package helpful
@@ -1238,20 +1240,20 @@ https://github.com/Wilfred/helpful
     (global-set-key (kbd "C-h F") #'helpful-function)
     (global-set-key (kbd "C-h C") #'helpful-command))
 #+end_src
-* Terminal
-** libvterm
+** Terminal
+*** libvterm
 https://github.com/akermu/emacs-libvterm
 #+begin_src emacs-lisp
   (use-package vterm
     :ensure t)
 #+end_src
-** vterm-toggle
+*** vterm-toggle
 https://github.com/kitnil/emacs-vterm-toggle
 #+begin_src emacs-lisp
   (use-package vterm-toggle
     :ensure t)
 #+end_src
-*** Show buffer in bottom side
+**** Show buffer in bottom side
 #+begin_src emacs-lisp
   (setq vterm-toggle-fullscreen-p nil)
   (add-to-list 'display-buffer-alist
@@ -1265,11 +1267,11 @@ https://github.com/kitnil/emacs-vterm-toggle
 		 (window-height . 0.15)))
 #+end_src
 
-* MU4E
+** MU4E
 #+begin_src emacs-lisp
   (require 'mu4e)
 #+end_src
-** Multiple Account Configuration  
+*** Multiple Account Configuration  
 #+begin_src emacs-lisp
   ;; assumed Maildir layout
   ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
@@ -1311,7 +1313,7 @@ https://github.com/kitnil/emacs-vterm-toggle
 #+RESULTS:
 : t
 
-** mbsync integration
+*** mbsync integration
 #+begin_src emacs-lisp
   (setq mu4e-get-mail-command "mbsync -a")
   ;; Most of the time, I merely want mu4e to re-index my local maildir (because
@@ -1330,7 +1332,7 @@ https://github.com/kitnil/emacs-vterm-toggle
   (setq mu4e-change-filenames-when-moving t)
 #+end_src
 
-** mu4e-alert
+*** mu4e-alert
 #+begin_src emacs-lisp
   (use-package mu4e-alert
     :ensure t
@@ -1358,7 +1360,7 @@ Alert for multiple email accounts
      "flag:unread maildir:/gmail/inbox"
      ))
 #+end_src
-** sending mail
+*** sending mail
 #+begin_src emacs-lisp
   ;; I have my "default" parameters from Gmail
   (setq mu4e-sent-folder "/home/th3r00t/.local/share/mail/admin/Sent"
@@ -1405,7 +1407,7 @@ Alert for multiple email accounts
 	(error "No email account found"))))
   (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
 #+end_src
-** Avoid trash on delete
+*** Avoid trash on delete
 #+begin_src
   (defun remove-nth-element (nth list)
   (if (zerop nth) (cdr list)
@@ -1422,7 +1424,7 @@ Alert for multiple email accounts
 		 (mu4e~proc-move docid
 		    (mu4e~mark-check-target target) "-N"))))
 #+end_src
-** Random Tweaks
+*** Random Tweaks
 #+begin_src emacs-lisp
   ;; This allows me to use 'helm' to select mailboxes
   (setq mu4e-completing-read-function 'completing-read)
@@ -1434,7 +1436,7 @@ Alert for multiple email accounts
   (setq mu4e-confirm-quit nil)
 #+end_src
 
-* Reddit
+** Reddit
 #+begin_src emacs-lisp
   (use-package md4rd :ensure t
     :config
@@ -1447,8 +1449,7 @@ Alert for multiple email accounts
     (run-with-timer 0 3540 'md4rd-refresh-login))
 #+end_src
 
-* Emacs Application Framework
-** Install
+** Emacs Application Framework*** Install
 #+begin_src emacs-lisp
   (use-package eaf
     :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
@@ -1468,17 +1469,18 @@ Alert for multiple email accounts
 #+RESULTS:
 : t
 
-** Configuration
+*** Configuration
 #+begin_src emacs-lisp
   (require 'eaf-browser)
 #+end_src
 
 #+RESULTS:
 : eaf-browser
-* Games
-* Music
-** EMMS
-*** install
+** MISC
+*** Games
+*** Music
+**** EMMS
+***** install
 #+begin_src emacs-lisp
   (use-package emms :ensure t)
   (require 'emms-setup)
@@ -1502,7 +1504,7 @@ Alert for multiple email accounts
   ;; libre-fm
   ;; (emms-librefm-scrobbler-enable)
 #+end_src
-*** config
+***** config
 #+begin_src emacs-lisp
   (setq-default
    emms-source-file-default-directory "/mnt/homeserver/Storage/Music"
@@ -1520,7 +1522,7 @@ Alert for multiple email accounts
 #+RESULTS:
 | --quiet | --really-quiet | --no-audio-display | --force-window=no | --vo=null |
 
-*** notifications
+***** notifications
 #+begin_src emacs-lisp
   ;; choose D-Bus to disseminate messages, if it is running.
   (cond
@@ -1566,23 +1568,23 @@ Alert for multiple email accounts
        (t (emms-notifications-message track-name)))))
 
 #+end_src
-*** addons
-**** helm-emms
+***** addons
+****** helm-emms
 #+begin_src emacs-lisp
   (use-package helm-emms :ensure t)
 #+end_src
-**** org-emms
+****** org-emms
 #+begin_src emacs-lisp
   (use-package org-emms :ensure t)
 #+end_src
-* Browsers
-** w3m
-*** install
+*** Browsers
+**** w3m
+***** install
 #+begin_src emacs-lisp
   (use-package w3m :ensure t)
   (use-package helm-w3m :ensure t)
 #+end_src
-**** infor from streaming audio mplayer only
+****** infor from streaming audio mplayer only
 #+begin_src emacs-lisp
   (setq  emms-player-mplayer-parameters '("-slave" "-quiet")
 	 emms-player-mplayer-playlist-parameters '("-slave" "-quiet" "-playlist"))
@@ -1649,7 +1651,7 @@ Alert for multiple email accounts
       (emms-track-updated track)
       ))
 #+end_src
-**** Better track descriptions
+****** Better track descriptions
 #+begin_src emacs-lisp
   (defun fg-emms-track-description (track)
     "Return a somewhat nice track description."
@@ -1672,7 +1674,7 @@ Alert for multiple email accounts
 
   (setq emms-track-description-function 'fg-emms-track-description)
 #+end_src
-**** dired movie player
+****** dired movie player
 #+begin_src emacs-lisp
   (defvar dired-mplayer-program "/usr/bin/mplayer")
 
@@ -1712,9 +1714,127 @@ Alert for multiple email accounts
 	  (shell-command command))))
 #+end_src
 
-* Discord
+*** Discord
 #+begin_src emacs-lisp
   (use-package elcord :ensure t :init (require 'elcord)(elcord-mode))
 #+end_src
 
 #+RESULTS:
+
+
+*** Erc
+#+begin_src emacs-lisp
+      ;; Set our nickname & real-name as constant variables
+      (setq
+       erc-nick "th3r00t"     ; Our IRC nick
+       erc-user-full-name "the master of /") ; Our /whois name
+
+      ;; Define a function to connect to a server
+      (defun irc/freenode ()
+	(interactive)
+	(erc :server "irc.freenode.net"
+	     :port   "6697"))
+
+      ;; Or assign it to a keybinding
+      ;; This example is also using erc's TLS capabilities:
+      (global-set-key "\C-cen"
+		      (lambda ()
+			(interactive)
+			(erc-tls :server "server2.example.com"
+				 :port   "6697")))
+      (setq erc-prompt (lambda () (concat "[" (buffer-name) "]")))
+	  ;; allow some channels to not auto-delay messages. This can probably
+	;; get you kicked from some channels, so don't use it.
+	(add-hook 'erc-mode-hook
+		  (lambda ()
+		    (let ((floodable-buffers
+			   '(;; every channel in this list is floodable:
+			     "#bugfunk"
+			     )))
+		      (when (member (buffer-name) floodable-buffers)
+			(make-local-variable 'erc-server-flood-penalty)
+			(setq erc-server-flood-penalty 0)))))
+	  (defun my/make-buffer-floodable ()
+	  (make-local-variable 'erc-server-flood-penalty)
+	  (setq erc-server-flood-penalty 0))
+      (setq erc-join-buffer 'bury)
+       (setq erc-button-url-regexp
+	  "\\([-a-zA-Z0-9_=!?#$@~`%&*+\\/:;,]+\\.\\)+[-a-zA-Z0-9_=!?#$@~`%&*+\\/:;,]*[-a-zA-Z0-9\\/]")
+      (defvar erc-responded-once nil)
+    (defvar erc-away-reason nil)
+    (defun erc-respond-once-if-away (match-type nickuserhost msg)
+      (if (erc-away-time)
+	  (if (eq match-type 'current-nick)
+	      (unless erc-responded-once
+		(erc-send-action (erc-default-target) (concat "is away: " erc-away-reason))
+		(setq erc-responded-once t)))))
+    (add-hook 'erc-text-matched-hook 'erc-respond-once-if-away)
+
+    (defadvice erc-process-away (after erc-away-reason-clear (proc away-p) activate)
+      "Clear things"
+      (unless away-p
+	(setq erc-responded-once nil
+	      erc-away-reason nil)))
+
+    (defadvice erc-cmd-AWAY (after erc-store-reason (line) activate)
+      "store line"
+      (when (string-match "^\\s-*\\(.*\\)$" line)
+	(let ((reason (match-string 1 line)))
+	  (setq erc-away-reason reason))))
+      ;;; Frame-related function from rcircDbusNotification
+
+  (defun fsm-x-active-window ()
+    "Return the window ID of the current active window in X, as
+  given by the _NET_ACTIVE_WINDOW of the root window set by the
+  window-manager, or nil if not able to"
+    (if (eq (window-system) 'x)
+	(let ((x-active-window (x-window-property "_NET_ACTIVE_WINDOW" nil "WINDOW" 0 nil t)))
+	  (string-to-number (format "%x00%x" (car x-active-window) (cdr x-active-window))
+			    16))
+      nil))
+
+  (defun fsm-frame-outer-window-id (frame)
+    "Return the frame outer-window-id property, or nil if FRAME not of the correct type"
+    (if (framep frame)
+	(string-to-number 
+	 (frame-parameter frame 'outer-window-id))
+      nil))
+
+
+  (defun fsm-frame-x-active-window-p (frame)
+    "Check if FRAME is is the X active windows
+  Returns t if frame has focus or nil if"
+    (if (framep frame)
+	(progn
+	  (if (eq (fsm-frame-outer-window-id frame)
+		  (fsm-x-active-window))
+	      t
+	    nil))
+      nil))
+
+(require 'ivy)
+(require 'erc)
+
+(define-minor-mode ivy-erc
+  "Add some useful functionality to the default racket-mode."
+  :lighter " ivy-erc"
+  :keymap (make-sparse-keymap))
+
+(defun ivy-erc-switch-buffer (&optional arg)
+  "Switch open erc buffer with ivy completion."
+  (interactive)
+  (let ((proc (unless arg erc-server-process)))
+    (ivy-read "IRC channel: "
+              (mapcar 'buffer-name
+                      (erc-buffer-filter
+                       (let ((buf (current-buffer)))
+                         (lambda ()
+                           (not (eq buf (current-buffer)))))
+                       proc))
+              :action 'switch-to-buffer
+              :require-match t
+              :caller 'ivy-erc-switch-buffer)))
+
+
+(provide 'ivy-erc)
+#+end_src
