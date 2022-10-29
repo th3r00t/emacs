@@ -19,6 +19,106 @@ projectile
 magit
 kill ring
 ag
+** Load Paths
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "/usr/share/emacs/site-lisp")
+  (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
+#+end_src
+** EXWM
+#+begin_src emacs-lisp
+    (fringe-mode 1)
+    (setq display-time-default-load-average nil)
+  (display-time-mode t)
+  (server-start)
+  (require 'exwm)
+    (require 'exwm-config)
+  (setq exwm-workspace-number 4)
+  ;; All buffers created in EXWM mode are named "*EXWM*". You may want to
+;; change it in `exwm-update-class-hook' and `exwm-update-title-hook', which
+;; are run when a new X window class name or title is available.  Here's
+;; some advice on this topic:
+;; + Always use `exwm-workspace-rename-buffer` to avoid naming conflict.
+;; + For applications with multiple windows (e.g. GIMP), the class names of
+;    all windows are probably the same.  Using window titles for them makes
+;;   more sense.
+;; In the following example, we use class names for all windows except for
+;; Java applications and GIMP.
+(add-hook 'exwm-update-class-hook
+          (lambda ()
+            (unless (or (string-prefix-p "sun-awt-X11-" exwm-instance-name)
+                        (string= "gimp" exwm-instance-name))
+              (exwm-workspace-rename-buffer exwm-class-name))))
+(add-hook 'exwm-update-title-hook
+          (lambda ()
+            (when (or (not exwm-instance-name)
+                      (string-prefix-p "sun-awt-X11-" exwm-instance-name)
+                      (string= "gimp" exwm-instance-name))
+              (exwm-workspace-rename-buffer exwm-title))))
+
+;; Global keybindings can be defined with `exwm-input-global-keys'.
+;; Here are a few examples:
+(setq exwm-input-global-keys
+      `(
+        ;; Bind "s-r" to exit char-mode and fullscreen mode.
+        ([?\s-r] . exwm-reset)
+        ;; Bind "s-w" to switch workspace interactively.
+        ([?\s-w] . exwm-workspace-switch)
+        ;; Bind "s-0" to "s-9" to switch to a workspace by its index.
+        ,@(mapcar (lambda (i)
+                    `(,(kbd (format "s-%d" i)) .
+                      (lambda ()
+                        (interactive)
+                        (exwm-workspace-switch-create ,i))))
+                  (number-sequence 0 9))
+        ;; Bind "s-&" to launch applications ('M-&' also works if the output
+        ;; buffer does not bother you).
+        ([?\s-&] . (lambda (command)
+		     (interactive (list (read-shell-command "$ ")))
+		     (start-process-shell-command command nil command)))
+        ;; Bind "s-<f2>" to "slock", a simple X display locker.
+        ([s-f2] . (lambda ()
+		    (interactive)
+		    (start-process "" nil "/usr/bin/slock")))))
+
+;; To add a key binding only available in line-mode, simply define it in
+;; `exwm-mode-map'.  The following example shortens 'C-c q' to 'C-q'.
+(define-key exwm-mode-map [?\C-q] #'exwm-input-send-next-key)
+
+;; The following example demonstrates how to use simulation keys to mimic
+;; the behavior of Emacs.  The value of `exwm-input-simulation-keys` is a
+;; list of cons cells (SRC . DEST), where SRC is the key sequence you press
+;; and DEST is what EXWM actually sends to application.  Note that both SRC
+;; and DEST should be key sequences (vector or string).
+(setq exwm-input-simulation-keys
+      '(
+        ;; movement
+        ([?\C-b] . [left])
+        ([?\M-b] . [C-left])
+        ([?\C-f] . [right])
+        ([?\M-f] . [C-right])
+        ([?\C-p] . [up])
+        ([?\C-n] . [down])
+        ([?\C-a] . [home])
+        ([?\C-e] . [end])
+        ([?\M-v] . [prior])
+        ([?\C-v] . [next])
+        ([?\C-d] . [delete])
+        ([?\C-k] . [S-end delete])
+        ;; cut/paste.
+        ([?\C-w] . [?\C-x])
+        ([?\M-w] . [?\C-c])
+        ([?\C-y] . [?\C-v])
+        ;; search
+        ([?\C-s] . [?\C-f])))
+
+;; You can hide the minibuffer and echo area when they're not used, by
+;; uncommenting the following line.
+;(setq exwm-workspace-minibuffer-position 'bottom)
+
+;; Do not forget to enable EXWM. It will start by itself when things are
+;; ready.  You can put it _anywhere_ in your configuration.
+;; (exwm-enable)
+#+end_src
 ** Org Mode Configs
 *** General
 #+begin_src emacs-lisp
@@ -54,6 +154,12 @@ https://www.orgroam.com/manual.html#Getting-Started
 **** config
 #+begin_src emacs-lisp
 #+end_src
+*** Hydra
+**** use-package
+#+begin_src emacs-lisp
+  (use-package hydra :ensure t :config (require 'hydra))
+#+end_src
+
 *** Org-Projectile
 **** use-package
 #+begin_src emacs-lisp
@@ -187,10 +293,6 @@ https://www.orgroam.com/manual.html#Getting-Started
 	   :unnarrowed t)
 	  ))
 #+end_src
-
-#+RESULTS:
-| d | default | plain | %? | :if-new | (file+head %<%Y%m%d%H%M%S>-${slug}.org #+title: ${title} |
-
 ***** Future Capture
 #+begin_src emacs-lisp
   
@@ -381,17 +483,11 @@ https://www.orgroam.com/manual.html#Getting-Started
 (define-key w3m-mode-map "z" 'w3m-open-link-or-image-in-chromium)
 ** Ui Configurations
 Configuration settings that adjust the user experience
-*** Hydra
-**** use-package
-#+begin_src emacs-lisp
-  (use-package hydra :ensure t :config (require 'hydra))
-#+end_src
-
 *** Font
 #+begin_src emacs_lisp
-    (set-frame-font "FiraCode Nerd Font Mono 20" nil t)
-    (set-default-font "FiraCode Nerd Font Mono 20" nil t)
-    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-20" ))
+    (set-frame-font "FiraCode Nerd Font Mono 25" nil t)
+    (set-default-font "FiraCode Nerd Font Mono 25" nil t)
+    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-25" ))
 #+end_src
 *** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
@@ -428,38 +524,20 @@ https://github.com/emacs-evil/evil-collection
 https://github.com/cofi/evil-leader
 #+begin_src emacs-lisp
   (setq evil-want-keybinding nil)
-  (use-package evil
+  (use-package evil-leader
     :ensure t
     :config
-    (evil-mode 1)
-    (use-package evil-leader
-      :ensure t
-      :config
-      (global-evil-leader-mode t)
-      (evil-leader/set-leader ",")
-      (use-package evil-surround
-	:ensure t
-	:config (global-evil-surround-mode))
-      (use-package evil-indent-textobject
-	:ensure t)
-      (use-package evil-org
-	:ensure t
-	:config
-	(evil-org-set-key-theme
-	 '(textobjects insert navigation additional shift todo heading))
-	(add-hook 'org-mode-hook (lambda () (evil-org-mode))))
-      (use-package powerline-evil
-	:ensure t
-	:config
-	(powerline-evil-vim-color-theme))
-      (use-package evil-collection
-	:after evil
-	:ensure t
-	:config
-	(evil-collection-init)))
-    (setq evil-want-fine-undo t)
-    (advice-add 'undo-auto--last-boundary-amalgamating-number
-		:override #'ignore)
+    (global-evil-leader-mode t)
+    (evil-leader/set-leader ","))
+  (use-package evil-surround :ensure t :config (global-evil-surround-mode))
+  (use-package evil-indent-textobject :ensure t)
+  (use-package evil-org :ensure t :config (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))
+    (add-hook 'org-mode-hook (lambda () (evil-org-mode))))
+  (use-package powerline-evil :ensure t :config (powerline-evil-vim-color-theme))
+  (use-package evil :ensure t :config (evil-mode 1))
+  (use-package evil-collection :after evil :ensure t :config (evil-collection-init))
+  (setq evil-want-fine-undo t)
+  (advice-add 'undo-auto--last-boundary-amalgamating-number :override #'ignore)
 #+end_src
 **** use gv to reselect visual selection after actions
 *** Theming
@@ -481,23 +559,22 @@ https://github.com/cofi/evil-leader
     :ensure t)
   (use-package doom-themes
     :ensure t
-    ;; :config
+    :config
     ;; Global settings (defaults)
-    ;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-    ;; 	doom-themes-enable-italic t) ; if nil, italics is universally disabled
-    ;; ;;(load-theme 'doom-nord t)
+    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+     	doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    (load-theme 'doom-nord t)
 
     ;; ;; Enable flashing mode-line on errors
-    ;; (doom-themes-visual-bell-config)
+    (doom-themes-visual-bell-config)
     ;; ;; Enable custom neotree theme (all-the-icons must be installed!)
-    ;; (doom-themes-neotree-config)
+    (doom-themes-neotree-config)
     ;; ;; or for treemacs users
-    ;; (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-    ;; (doom-themes-treemacs-config)
+    (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+    (doom-themes-treemacs-config)
     ;; ;; Corrects (and improves) org-mode's native fontification.
-    ;; (doom-themes-org-config)
+    (doom-themes-org-config)
     )
-  (use-package spacemacs-theme :ensure t)
 #+end_src
 **** Enable Theme
 #+begin_src emacs-lisp
@@ -511,14 +588,10 @@ https://github.com/cofi/evil-leader
 #+begin_src emacs-lisp
   (use-package spaceline :ensure t :config (require 'spaceline-config) :init (spaceline-spacemacs-theme))
 #+end_src
-
-#+RESULTS:
-: t
-
 ***** Configuration
 #+begin_src emacs-lisp
   (spaceline-compile
-					  ; left side
+    ; left side
     '(((persp-name
 	workspace-number
 	window-number)
@@ -559,10 +632,6 @@ https://github.com/cofi/evil-leader
       (buffer-position :priority 99)
       (hud :priority 99)))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ())
-
 **** Fancy Battery
 #+begin_src emacs-lisp
   (use-package fancy-battery :ensure t :init (add-hook 'after-init-hook #'fancy-battery-mode))
@@ -589,7 +658,7 @@ https://github.com/cofi/evil-leader
     (setq dashboard-set-init-info t)
     (setq dashboard-week-agenda t)
     (setq dashboard-center-content t)
-    (setq dashboard-startup-banner "/home/th3r00t/Pictures/Avatars/hooded-hacker-laptop.png")
+    (setq dashboard-startup-banner "/home/th3r00t/Pictures/Avatars/hooded-hacker-laptop-small.png")
     ;; Value can be
     ;; 'official which displays the official emacs logo
     ;; 'logo which displays an alternative emacs logo
@@ -673,9 +742,6 @@ https://github.com/cofi/evil-leader
   (setq fci-rule-color "darkblue")
   (add-hook 'prog-mode-hook #'fci-mode)
 #+end_src
-#+RESULTS:
-| fci-mode | lsp-deferred | hs-minor-mode | rainbow-delimiters-mode |
-
 ** General Configurations
 *** Default Overrides
 **** yes-no
@@ -709,35 +775,6 @@ https://www.emacswiki.org/emacs/TrampMode
 #+begin_src emacs-lip
   (setq tramp-default-method "ssh")
 #+end_src
-*** Adjust Yank and Paste
-https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-emacs
-#+begin_src emacs-lisp
-  (defun clipboard-yank-my (&rest args)
-    """ wrapper: yank with shifting yanked text to current cursor column """
-    ;; wrapping: https://emacs.stackexchange.com/questions/19215/how-to-write-a-transparent-pass-through-function-wrapper#comment55216_19242)
-    (interactive (advice-eval-interactive-spec
-		  (cadr (interactive-form #'clipboard-yank))))
-
-    (setq point1 (point))
-    (beginning-of-line)
-    (setq pointStart (point))
-    (setq currentColumn (- point1 (point)))
-
-    ;; ORIGINAL 
-    (apply #'clipboard-yank args)
-
-    (newline)
-    ;; (print col)
-    (set-mark-command nil)
-    (goto-char pointStart)
-    (indent-rigidly
-     (region-beginning)
-     (region-end)
-     currentColumn)
-    (goto-char point1) 
-    ;; (setq deactivate-mark nil)
-    )
-#+end_src
 *** Follow Symlinks
 #+begin_src emacs-lisp
   (setq find-file-visit-truename t)
@@ -748,9 +785,6 @@ https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-ema
   (add-hook 'prog-mode-hook #'hs-minor-mode)
   ;;(add-hook 'prog-mode-hook (lambda () (evil-close-folds)))
 #+end_src
-
-#+RESULTS:
-| (lambda nil (evil-close-folds)) | evil-close-folds | hs-minor-mode | hs-mo=inor-mode | lsp-deferred | rainbow-delimiters-mode |
 
 *** Undo
 #+begin_src emacs-lisp
@@ -769,6 +803,7 @@ https://stackoverflow.com/questions/67700693/paste-text-aligned-to-cursor-in-ema
   (set-register ?e (cons 'file "~/.emacs.d/"))
   (set-register ?z (cons 'file "~/.zshrc"))
   (set-register ?x (cons 'file "~/.xinitrc"))
+  (set-register ?p (cons 'file "~/postinstall.sh"))
 #+end_src
 ** File Management
 *** NeoTree
@@ -991,6 +1026,11 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 *** Python
 #+begin_src emacs-lisp
 #+end_src
+*** Vue js
+#+begin_src emacs-lisp
+  (use-package vue-mode :ensure t)
+  (use-package vue-htm-mode :ensure t)
+#+end_src
 ** Completion System
 *** Pop-up
 #+begin_src emacs-lisp
@@ -1023,8 +1063,8 @@ https://company-mode.github.io/
     (add-hook 'after-init-hook 'global-company-mode)
     )
   (use-package company-c-headers :ensure t)
-  (use-package company-gtags :ensure t)
-  (use-package company-elisp :ensure t)
+  ;(use-package company-gtags :ensure t)
+  ;(use-package company-elisp :ensure t)
 #+end_src
 **** Configure
 #+begin_src emacs-lisp
@@ -1034,6 +1074,10 @@ https://company-mode.github.io/
   (define-key c++-mode-map  [(tab)] 'company-complete)
   (add-to-list 'company-backends 'company-c-headers)
   (add-to-list 'company-c-headers-path-system "/usr/include/c++/12.1.1/")
+#+end_src
+*** Ivy
+#+begin_src emacs-lisp
+  (use-package ivy :ensure t)
 #+end_src
 *** Helm
 https://github.com/emacs-helm/helm/wiki
@@ -1050,7 +1094,6 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
     (require 'helm)
     (require 'helm-config)
     )
-  (use-package ggtags :ensure t :init (require 'setup-ggtags))
 #+end_src
 **** Configure
 ***** Helm General
@@ -1152,75 +1195,75 @@ https://github.com/justbur/emacs-which-key
 *** Bindings
 https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
 #+begin_src emacs-lisp
-    (global-set-key [C-tab] 'sidebar-toggle)
-    (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
-    (global-set-key (kbd "C-c n f") 'org-roam-node-find)
-    (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
-    (global-set-key (kbd "C-c n I") 'org-roam-node-insert-immediate)
-    (global-set-key (kbd "C-c n c") 'org-roam-capture)
-    (global-set-key (kbd "C-c n C") 'org-capture)
-    (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
-    (global-set-key (kbd "C-c o") 'helm-occur)
-    (global-set-key (kbd "C-; ;") 'exec2point)
-    (global-set-key (kbd "C-; t t") 'helm-top)
-    (global-set-key (kbd "C-; t T") 'helm-top-in-frame)
-    (global-set-key (kbd "C-; m p") 'emms-metaplaylist-mode-go)
-    (global-set-key (kbd "C-; m h") 'helm-emms)
-    (global-set-key (kbd "C-; m s") 'emms-stop)
-    (global-set-key (kbd "C-; m S") 'emms-start)
-    (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-    (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key [C-tab] 'sidebar-toggle)
+  (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
+  (global-set-key (kbd "C-c n f") 'org-roam-node-find)
+  (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
+  (global-set-key (kbd "C-c n I") 'org-roam-node-insert-immediate)
+  (global-set-key (kbd "C-c n c") 'org-roam-capture)
+  (global-set-key (kbd "C-c n C") 'org-capture)
+  (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
+  (global-set-key (kbd "C-c o") 'helm-occur)
+  (global-set-key (kbd "C-; ;") 'exec2point)
+  (global-set-key (kbd "C-; t t") 'helm-top)
+  (global-set-key (kbd "C-; t T") 'helm-top-in-frame)
+  (global-set-key (kbd "C-; m p") 'emms-metaplaylist-mode-go)
+  (global-set-key (kbd "C-; m h") 'helm-emms)
+  (global-set-key (kbd "C-; m s") 'emms-stop)
+  (global-set-key (kbd "C-; m S") 'emms-start)
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
   (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
   (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
-    (global-set-key (kbd "M-[") 'insert-pair)
-(global-set-key (kbd "M-{") 'insert-pair)
-(global-set-key (kbd "M-\"") 'insert-pair)
-    (define-key yas-minor-mode-map (kbd "C-SPC") yas-maybe-expand)
-    (evil-leader/set-key
-      "b" '("Buffers" . (keymap))
-      "b b" 'helm-buffers-list
-      "b n" 'next-buffer
-      "b p" 'previous-buffer
-      "b e" 'eval-buffer
-      "b k" 'kill-buffer
-      "d" '("Develop" . (keymap))
-      "d d" 'dap-debug
-      "d h" 'dap-hydra
-      "d b b" 'dap-breakpoint-toggle
-      "d r" 'dap-ui-repl
-      "f" '("Files" . (keymap))
-      "f f" 'helm-find-files
-      "f s" 'sudo-find-file
-      "k k" 'helm-show-kill-ring
-      "t" '("Toggles" . (keymap))
-      "t f" 'neotree-toggle
-      "t t" 'vterm-toggle
-      "t T" 'tool-bar-mode
-      "t M" 'menu-bar-mode
-      "t s" 'lsp-treemacs-symbols
-      "t n" 'linum-mode
-      "o" '("Org" . (keymap))
-      "o t" 'todo-show
-      "p" '("Projects" . (keymap))
-      "p a" 'projectile-add-known-project
-      "p h" 'helm-projectile
-      "p p" 'projectile-command-map
-      "q" '("Emacs Ops" . (keymap))
-      "q f" 'delete-frame
-      "q q" 'evil-quit
-      "q r" 'reload-config
-      "r" '("Registers" . (keymap))
-      "r r" 'helm-register
-      "TAB" '("Tabs" . (keymap))
-      "TAB TAB" 'tab-new
-      "TAB n" 'tab-next
-      "TAB p" 'tab-previous
-      "TAB l" 'tab-list
-      "T" '("Theming" . (keymap))
-      "T x" 'theme-magic-from-emacs
-      "T T" 'helm-themes
-      "d x w" 'delete-trailing-whitespace))
+  (global-set-key (kbd "M-[") 'insert-pair)
+  (global-set-key (kbd "M-{") 'insert-pair)
+  ;; (global-set-key (kbd "M-\"") 'insert-pair)
+  (define-key yas-minor-mode-map (kbd "C-SPC") yas-maybe-expand)
+  (evil-leader/set-key
+    "b" '("Buffers" . (keymap))
+    "b b" 'helm-buffers-list
+    "b n" 'next-buffer
+    "b p" 'previous-buffer
+    "b e" 'eval-buffer
+    "b k" 'kill-buffer
+    "d" '("Develop" . (keymap))
+    "d d" 'dap-debug
+    "d h" 'dap-hydra
+    "d b b" 'dap-breakpoint-toggle
+    "d r" 'dap-ui-repl
+    "f" '("Files" . (keymap))
+    "f f" 'helm-find-files
+    "f s" 'sudo-find-file
+    "k k" 'helm-show-kill-ring
+    "t" '("Toggles" . (keymap))
+    "t f" 'neotree-toggle
+    "t t" 'vterm-toggle
+    "t T" 'tool-bar-mode
+    "t M" 'menu-bar-mode
+    "t s" 'lsp-treemacs-symbols
+    "t n" 'linum-mode
+    "o" '("Org" . (keymap))
+    "o t" 'todo-show
+    "p" '("Projects" . (keymap))
+    "p a" 'projectile-add-known-project
+    "p h" 'helm-projectile
+    "p p" 'projectile-command-map
+    "q" '("Emacs Ops" . (keymap))
+    "q f" 'delete-frame
+    "q q" 'evil-quit
+    "q r" 'reload-config
+    "r" '("Registers" . (keymap))
+    "r r" 'helm-register
+    "TAB" '("Tabs" . (keymap))
+    "TAB TAB" 'tab-new
+    "TAB n" 'tab-next
+    "TAB p" 'tab-previous
+    "TAB l" 'tab-list
+    "T" '("Theming" . (keymap))
+    "T x" 'theme-magic-from-emacs
+    "T T" 'helm-themes
+    "d x w" 'delete-trailing-whitespace)
 #+end_src
 
 #+RESULTS:

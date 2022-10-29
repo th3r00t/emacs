@@ -46,6 +46,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(battery-upower-device '("battery_BAT0"))
+ '(display-battery-mode t)
  '(display-line-numbers-type t)
  '(eaf-browser-blank-page-url "https://home.mylt.dev")
  '(eaf-browser-default-search-engine "duckduckgo")
@@ -64,17 +66,10 @@
    '((company-clang-arguments "-I/home/th3r00t/.local/builds/DungeonsOfDespair/src")))
  '(send-mail-function 'smtpmail-send-it)
  '(warning-suppress-log-types '((lsp-mode) (lsp-mode)))
- '(warning-suppress-types
-   '((emacs)
-     (use-package)
-     (use-package)
-     (comp)
-     (comp)
-     (emacs)
-     (lsp-mode))))
+ '(warning-suppress-types '((emacs) (use-package) (comp) (emacs) (lsp-mode))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#2E3440" :foreground "#ECEFF4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 142 :width normal :foundry "ADBO" :family "FiraCode Nerd Font Mono")))))
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#2E3440" :foreground "#ECEFF4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 180 :width normal :foundry "ADBO" :family "FiraCode Nerd Font Mono")))))
