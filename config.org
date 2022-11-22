@@ -24,8 +24,27 @@ ag
   (add-to-list 'load-path "/usr/share/emacs/site-lisp")
   (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
 #+end_src
-** EXWM
+*** Evil Mode
+https://github.com/emacs-evil/evil-collection
+https://github.com/cofi/evil-leader
 #+begin_src emacs-lisp
+  (setq evil-want-keybinding nil)
+  (use-package evil-leader
+    :ensure t
+    :config
+    (global-evil-leader-mode t)
+    (evil-leader/set-leader ","))
+  (use-package evil-surround :ensure t :config (global-evil-surround-mode))
+  (use-package evil-indent-textobject :ensure t)
+  (use-package evil-org :ensure t :config (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))
+    (add-hook 'org-mode-hook (lambda () (evil-org-mode))))
+  (use-package powerline-evil :ensure t :config (powerline-evil-vim-color-theme))
+  (use-package evil :ensure t :config (evil-mode 1))
+  (use-package evil-collection :after evil :ensure t :config (evil-collection-init))
+  (setq evil-want-fine-undo t)
+  (advice-add 'undo-auto--last-boundary-amalgamating-number :override #'ignore)
+#+end_src
+** EXWM
     (fringe-mode 1)
     (setq display-time-default-load-average nil)
   (display-time-mode t)
@@ -118,7 +137,6 @@ ag
 ;; Do not forget to enable EXWM. It will start by itself when things are
 ;; ready.  You can put it _anywhere_ in your configuration.
 ;; (exwm-enable)
-#+end_src
 ** Org Mode Configs
 *** General
 #+begin_src emacs-lisp
@@ -295,7 +313,7 @@ https://www.orgroam.com/manual.html#Getting-Started
 #+end_src
 ***** Future Capture
 #+begin_src emacs-lisp
-  
+
 #+end_src
 ** Custom Functions
 *** Org goto project todo
@@ -311,7 +329,7 @@ https://www.orgroam.com/manual.html#Getting-Started
     (interactive "P")
     (let ((args (cons arg args))
 	  (org-roam-capture-template (list (append (car org-roam-capture-templates)'(:immediate-finish t)))))
-      (apply #'org-roam-node-insert args))) 
+      (apply #'org-roam-node-insert args)))
 #+end_src
 
 #+RESULTS:
@@ -351,6 +369,8 @@ https://www.orgroam.com/manual.html#Getting-Started
 *** helm/functions
 **** helm/eselect-grep
 #+begin_src emacs-lisp
+  (use-package helm :ensure t)
+  (use-package helm-gtags :ensure t)
   (defun helm/eselect-grep ()
     (interactive)
     (when (y-or-n-p (format "Current grep program is %s, switching? "
@@ -474,7 +494,7 @@ https://www.orgroam.com/manual.html#Getting-Started
   "Open the current link or image in Firefox."
   (interactive)
   (let ((url (or (w3m-anchor) (w3m-image))))
-   (if (string-match "youtube" url) 
+   (if (string-match "youtube" url)
        (let ((track (emms-track 'url url)))
 	  (emms-track-set track 'info-title (substring  (shell-command-to-string (concat "youtube-dl -e " url)) 0 -1))
 	  (with-current-emms-playlist
@@ -485,9 +505,9 @@ https://www.orgroam.com/manual.html#Getting-Started
 Configuration settings that adjust the user experience
 *** Font
 #+begin_src emacs_lisp
-    (set-frame-font "FiraCode Nerd Font Mono 25" nil t)
-    (set-default-font "FiraCode Nerd Font Mono 25" nil t)
-    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-25" ))
+    (set-frame-font "FiraCode Nerd Font Mono 5" nil t)
+    (set-default-font "FiraCode Nerd Font Mono 5" nil t)
+    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-5" ))
 #+end_src
 *** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
@@ -578,7 +598,7 @@ https://github.com/cofi/evil-leader
 #+end_src
 **** Enable Theme
 #+begin_src emacs-lisp
-  (load-theme 'spacemacs-dark t)
+  (load-theme 'doom-tokyo-night t)
 #+end_src
 *** Modeline
 **** Space Line
@@ -658,7 +678,8 @@ https://github.com/cofi/evil-leader
     (setq dashboard-set-init-info t)
     (setq dashboard-week-agenda t)
     (setq dashboard-center-content t)
-    (setq dashboard-startup-banner "/home/th3r00t/Pictures/Avatars/hooded-hacker-laptop-small.png")
+    (setq dashboard-banner-logo-title "We Do Not Forget")
+    (setq dashboard-startup-banner "~/.emacs.d/legion_transparent.png")
     ;; Value can be
     ;; 'official which displays the official emacs logo
     ;; 'logo which displays an alternative emacs logo
@@ -700,7 +721,7 @@ https://github.com/cofi/evil-leader
       (goto-char 1)
       (search-forward "-\n" nil t)
       (delete-region 1 (point))
-      (let ((window-min-height 1)) 
+      (let ((window-min-height 1))
 	;; save a little screen estate
 	(shrink-window-if-larger-than-buffer))
       (read-only-mode 1)))
@@ -745,7 +766,7 @@ https://github.com/cofi/evil-leader
 ** General Configurations
 *** Default Overrides
 **** yes-no
-***** 
+*****
 #+begin_src emacs-lisp
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
@@ -1028,8 +1049,8 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 #+end_src
 *** Vue js
 #+begin_src emacs-lisp
-  (use-package vue-mode :ensure t)
-  (use-package vue-htm-mode :ensure t)
+  ;; (use-package vue-mode :ensure t)
+  ;; (use-package vue-htm-mode :ensure t)
 #+end_src
 ** Completion System
 *** Pop-up
@@ -1068,7 +1089,7 @@ https://company-mode.github.io/
 #+end_src
 **** Configure
 #+begin_src emacs-lisp
-  
+
   (setq company-backends (delete 'company-semantic company-backends))
   (define-key c-mode-map  [(tab)] 'company-complete)
   (define-key c++-mode-map  [(tab)] 'company-complete)
@@ -1090,7 +1111,7 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
     :straight t
     :config
     (helm-mode 1)
-    :init 
+    :init
     (require 'helm)
     (require 'helm-config)
     )
@@ -1168,7 +1189,7 @@ https://github.com/emacsorphanage/helm-ag
 #+begin_src emacs-lisp
   (use-package helm-ag
     :ensure t
-    )  
+    )
 #+end_src
 *** Speedbar
 #+begin_src emacs-lisp
@@ -1314,7 +1335,7 @@ https://github.com/kitnil/emacs-vterm-toggle
 #+begin_src emacs-lisp
   (require 'mu4e)
 #+end_src
-*** Multiple Account Configuration  
+*** Multiple Account Configuration
 #+begin_src emacs-lisp
   ;; assumed Maildir layout
   ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
@@ -1395,7 +1416,7 @@ https://github.com/kitnil/emacs-vterm-toggle
     )
 #+end_src
 Alert for multiple email accounts
-#+begin_src 
+#+begin_src
   (setq mu4e-alert-interesting-mail-query
     (concat
      "flag:unread maildir:/admin@mylt.dev/inbox "
@@ -1414,7 +1435,7 @@ Alert for multiple email accounts
 	smtpmail-smtp-server "smtp.office365.com"
 	smtpmail-smtp-service 587)
 
-  ;; Now I set a list of 
+  ;; Now I set a list of
   (defvar my-mu4e-account-alist
     '(("Admin"
        (mu4e-sent-folder "/admin/Sent")
@@ -1430,7 +1451,7 @@ Alert for multiple email accounts
 
   (defun my-mu4e-set-account ()
     "Set the account for composing a message.
-     This function is taken from: 
+     This function is taken from:
        https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
     (let* ((account
 	    (if mu4e-compose-parent-message
@@ -1463,7 +1484,7 @@ Alert for multiple email accounts
        :char ("d" . "▼")
        :prompt "dtrash"
        :dyn-target (lambda (target msg) (mu4e-get-trash-folder msg))
-       :action (lambda (docid msg target) 
+       :action (lambda (docid msg target)
 		 (mu4e~proc-move docid
 		    (mu4e~mark-check-target target) "-N"))))
 #+end_src
@@ -1480,7 +1501,6 @@ Alert for multiple email accounts
 #+end_src
 
 ** Reddit
-#+begin_src emacs-lisp
   (use-package md4rd :ensure t
     :config
     (add-hook 'md4rd-mode-hook 'md4rd-indent-all-the-lines)
@@ -1490,10 +1510,8 @@ Alert for multiple email accounts
     (setq md4rd--oauth-refresh-token
 	  "dK7qKMb50RaIIYLYi_tM2tKMZ5Be7g")
     (run-with-timer 0 3540 'md4rd-refresh-login))
-#+end_src
 
 ** Emacs Application Framework*** Install
-#+begin_src emacs-lisp
   (use-package eaf
     :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
     :custom
@@ -1507,19 +1525,9 @@ Alert for multiple email accounts
     (eaf-bind-key scroll_down "C-p" eaf-pdf-viewer-keybinding)
     (eaf-bind-key take_photo "p" eaf-camera-keybinding)
     (eaf-bind-key nil "M-q" eaf-browser-keybinding)) ;; unbind, see more in the Wiki
-#+end_src
-
-#+RESULTS:
-: t
 
 *** Configuration
-#+begin_src emacs-lisp
   (require 'eaf-browser)
-#+end_src
-
-#+RESULTS:
-: eaf-browser
-** MISC
 *** Games
 *** Music
 **** EMMS
@@ -1649,7 +1657,7 @@ Alert for multiple email accounts
   (defmacro emms-mplayer-info-defreg (symname regexp)
     "Set SYMNAME to be the match for REGEXP."
     `(if (string-match ,regexp string)
-	 (progn 
+	 (progn
 	   (setq ,symname (decode-coding-string (match-string 1 string) emms-mplayer-info-coding-system))
 	   (if (> (length ,symname) 40)
 	       (setq ,symname (concat (substring ,symname 0 37) "..."))))
@@ -1758,9 +1766,7 @@ Alert for multiple email accounts
 #+end_src
 
 *** Discord
-#+begin_src emacs-lisp
   (use-package elcord :ensure t :init (require 'elcord)(elcord-mode))
-#+end_src
 
 #+RESULTS:
 
@@ -1839,7 +1845,7 @@ Alert for multiple email accounts
   (defun fsm-frame-outer-window-id (frame)
     "Return the frame outer-window-id property, or nil if FRAME not of the correct type"
     (if (framep frame)
-	(string-to-number 
+	(string-to-number
 	 (frame-parameter frame 'outer-window-id))
       nil))
 
@@ -1880,4 +1886,8 @@ Alert for multiple email accounts
 
 
 (provide 'ivy-erc)
+#+end_src
+** Enable Theme
+#+begin_src emacs-lisp
+  (load-theme 'doom-tokyo-night t)
 #+end_src
