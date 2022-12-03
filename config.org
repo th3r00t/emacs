@@ -825,6 +825,11 @@ https://www.emacswiki.org/emacs/TrampMode
   (set-register ?p (cons 'file "~/postinstall.sh"))
 #+end_src
 ** File Management
+*** Neotree
+**** install
+#+begin_src emacs-lisp
+  (use-package neotree :ensure t)
+#+end_src
 ** Project Management
 *** Projectile
 https://projectile.mx/
