@@ -412,12 +412,10 @@ https://www.orgroam.com/manual.html#Getting-Started
 	(message "[%s]" (which-function)))))
 #+end_src
 **** helm-find-files-in-frame
-#+begin_src emacs-lisp
   (defun helm-find-files-in-frame ()
     (interactive)
     (with-helm-in-frame
       (call-interactively #'helm-find-files)))
-#+end_src
 **** helm-M-x-in-frame
 #+begin_src emacs-lisp
   (defun helm-M-x-in-frame ()
