@@ -1,3 +1,7 @@
+;;; Config --- My Custom Emacs
+;;; Commentary:
+;;; Litterate Config Entry Point
+;;; Code:
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (package-initialize)
@@ -50,6 +54,7 @@
  '(delete-selection-mode nil)
  '(display-battery-mode t)
  '(display-line-numbers-type t)
+ '(elcord-client-id "1050866692621877279")
  '(evil-undo-system 'undo-tree)
  '(global-display-line-numbers-mode nil)
  '(helm-M-x-always-save-history t)
@@ -57,15 +62,17 @@
  '(helm-minibuffer-history-key "M-p")
  '(helm-minibuffer-history-mode t)
  '(helm-mode t)
+ '(highlight-indent-guides-method 'column)
  '(org-agenda-files
    '("/home/th3r00t/org/projects.org" "/home/th3r00t/org/projects.org"))
  '(package-selected-packages '(## evil use-package))
  '(send-mail-function 'smtpmail-send-it)
  '(warning-suppress-log-types '((lsp-mode) (lsp-mode)))
- '(warning-suppress-types '((emacs) (use-package) (comp) (emacs) (lsp-mode))))
+ '(warning-suppress-types '((emacs) (use-package) (comp) (emacs) (lsp-mode)))
+ '(which-key-frame-max-height 40))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#1a1b26" :foreground "#a9b1d6" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 180 :width normal :foundry "CTDB" :family "FiraCode Nerd Font Mono")))))

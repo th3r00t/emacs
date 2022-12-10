@@ -491,13 +491,23 @@ https://www.orgroam.com/manual.html#Getting-Started
 	  (emms-playlist-insert-track track)))
  (browse-url-generic url))))
 (define-key w3m-mode-map "z" 'w3m-open-link-or-image-in-chromium)
+*** insert-date
+#+begin_src emacs-lisp
+  (defun insert-date (prefix)
+    "Insert the current date. With prefix-argument, use ISO format. With
+   two prefix arguments, write out the day and month name."
+    (interactive "P")
+    (let ((format (cond
+		   ((not prefix) "%d.%m.%Y")
+		   ((equal prefix '(4)) "%Y-%m-%d")
+		   ((equal prefix '(16)) "%A, %d. %B %Y")))
+	  (system-time-locale "en_US"))
+      (insert (format-time-string format))))
+#+end_src
 ** Ui Configurations
 Configuration settings that adjust the user experience
 *** Font
 #+begin_src emacs_lisp
-    (set-frame-font "FiraCode Nerd Font Mono 5" nil t)
-    (set-default-font "FiraCode Nerd Font Mono 5" nil t)
-    (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-5" ))
 #+end_src
 *** Window systems -- remove visual cruft
 #+begin_src emacs-lisp
@@ -670,7 +680,7 @@ https://github.com/cofi/evil-leader
   (use-package dashboard
     :ensure t
     :config
-    (linum-mode -1)
+    ;; (linum-mode -1)
     (dashboard-setup-startup-hook)
     (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
     (setq dashboard-items '((recents  . 5)
@@ -684,7 +694,7 @@ https://github.com/cofi/evil-leader
     (setq dashboard-set-init-info t)
     (setq dashboard-week-agenda t)
     (setq dashboard-center-content t)
-    (setq dashboard-banner-logo-title "We Do Not Forget")
+    (setq dashboard-banner-logo-title "We Do Not Forgive\nWe Do Not Forget\nExpect Us.")
     (setq dashboard-startup-banner "~/.emacs.d/legion_transparent.png")
     ;; Value can be
     ;; 'official which displays the official emacs logo
@@ -872,19 +882,18 @@ https://magit.vc/
     (eval `(defadvice ,command (after indent-region activate)
 	     (and (not current-prefix-arg)
 		  (member major-mode '(emacs-lisp-mode lisp-mode
-						       clojure-mode    scheme-mode
-						       haskell-mode    ruby-mode
-						       rspec-mode      python-mode
-						       c-mode          c++-mode
-						       objc-mode       latex-mode
-						       plain-tex-mode))
+					clojure-mode    scheme-mode
+					haskell-mode    ruby-mode
+					rspec-mode      python-mode
+					c-mode          c++-mode
+					objc-mode       latex-mode
+					plain-tex-mode))
 		  (let ((mark-even-if-inactive transient-mark-mode))
 		    (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
 #+begin_src emacs-lisp
     (use-package highlight-indent-guides :ensure t
-	:hook((prog-mode . highlight-indent-guides-mode))
-	:config ((setq highlight-indent-guides-method 'bitmap)))
+	:hook((prog-mode . highlight-indent-guides-mode)))
 #+end_src
 
 *** Lsp
@@ -1171,7 +1180,7 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
   (setq helm-M-x-fuzzy-match t)
   ;;(setq helm-display-function 'helm-display-buffer-in-own-frame helm-display-buffer-reuse-frame t)
   (setq helm-input-idle-delay                     0.01
-	helm-reuse-last-window-split-state        t
+	helm-reuse-last-window-split-state        nil
 	helm-always-two-windows                   t
 	helm-split-window-inside-p                t
 	helm-commands-using-frame                 '(completion-at-point helm-apropos helm-eshell-prompts helm-imenu helm-imenu-in-all-buffers)
@@ -1243,6 +1252,9 @@ https://github.com/justbur/emacs-which-key
     :ensure t
     :config
     (which-key-mode))
+  ;; (which-key-setup-side-window-right)
+  (which-key-setup-side-window-right-bottom)
+  (setq which-key-side-window-max-width 0.50)
 #+end_src
 *** Macros
 **** Execute a shell command and insert return
@@ -1253,6 +1265,7 @@ https://github.com/justbur/emacs-which-key
 *** Bindings
 https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
 #+begin_src emacs-lisp
+  (global-set-key (kbd "C-c n") '("Org Roam" . (keymap)))
   (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
   (global-set-key (kbd "C-c n f") 'org-roam-node-find)
   (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
@@ -1262,13 +1275,17 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-c l") 'org-store-link)
   (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
   (global-set-key (kbd "C-c o") 'helm-occur)
+  (global-set-key (kbd "C-;") '("Emacs Ops" . (keymap)))
   (global-set-key (kbd "C-; ;") 'exec2point)
+  (global-set-key (kbd "C-; t") '("Toggles" . (keymap)))
   (global-set-key (kbd "C-; t t") '("Vterm" . vterm))
   (global-set-key (kbd "C-; t T") 'helm-top-in-frame)
+  (global-set-key (kbd "C-; m") '("Media" . (keymap)))
   (global-set-key (kbd "C-; m p") 'emms-metaplaylist-mode-go)
   (global-set-key (kbd "C-; m h") 'helm-emms)
   (global-set-key (kbd "C-; m s") 'emms-stop)
   (global-set-key (kbd "C-; m S") 'emms-start)
+  (global-set-key (kbd "C-; d") 'insert-date)
   (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
   (global-set-key (kbd "C->") 'mc/mark-next-like-this)
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
@@ -1420,10 +1437,6 @@ https://github.com/kitnil/emacs-vterm-toggle
 	    "admin" "Raelon 'th3r00t' Masters" "admin@mylt.dev" "<a href=home.mylt.dev>th3r00t</a>"
 	    )))
 #+end_src
-
-#+RESULTS:
-: t
-
 *** mbsync integration
 #+begin_src emacs-lisp
   (setq mu4e-get-mail-command "mbsync -a")
@@ -1575,10 +1588,9 @@ Alert for multiple email accounts
 
 *** Configuration
   (require 'eaf-browser)
-*** [#A] Games
-*** Music
-**** EMMS
-***** install
+** Music
+*** EMMS
+**** install
 #+begin_src emacs-lisp
   (use-package emms :ensure t)
   (require 'emms-setup)
@@ -1602,7 +1614,7 @@ Alert for multiple email accounts
   ;; libre-fm
   ;; (emms-librefm-scrobbler-enable)
 #+end_src
-***** config
+**** config
 #+begin_src emacs-lisp
   (setq-default
    emms-source-file-default-directory "/mnt/homeserver/Storage/Music"
@@ -1616,11 +1628,7 @@ Alert for multiple email accounts
    emms-player-mpv-environment '("PULSE_PROP_media.role=music")
    emms-player[[id:06c97e1e-5602-405b-8434-0ce12c44e03f][Guides]]-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null"))
 #+end_src
-
-#+RESULTS:
-| --quiet | --really-quiet | --no-audio-display | --force-window=no | --vo=null |
-
-***** notifications
+**** notifications
 #+begin_src emacs-lisp
   ;; choose D-Bus to disseminate messages, if it is running.
   (cond
@@ -1666,23 +1674,16 @@ Alert for multiple email accounts
        (t (emms-notifications-message track-name)))))
 
 #+end_src
-***** addons
-****** helm-emms
+**** addons
+***** helm-emms
 #+begin_src emacs-lisp
   (use-package helm-emms :ensure t)
 #+end_src
-****** org-emms
+***** org-emms
 #+begin_src emacs-lisp
   (use-package org-emms :ensure t)
 #+end_src
-*** Browsers
-**** w3m
-***** install
-#+begin_src emacs-lisp
-  (use-package w3m :ensure t)
-  (use-package helm-w3m :ensure t)
-#+end_src
-****** infor from streaming audio mplayer only
+**** infor from streaming audio mplayer only
 #+begin_src emacs-lisp
   (setq  emms-player-mplayer-parameters '("-slave" "-quiet")
 	 emms-player-mplayer-playlist-parameters '("-slave" "-quiet" "-playlist"))
@@ -1749,7 +1750,7 @@ Alert for multiple email accounts
       (emms-track-updated track)
       ))
 #+end_src
-****** Better track descriptions
+**** Better track descriptions
 #+begin_src emacs-lisp
   (defun fg-emms-track-description (track)
     "Return a somewhat nice track description."
@@ -1772,7 +1773,7 @@ Alert for multiple email accounts
 
   (setq emms-track-description-function 'fg-emms-track-description)
 #+end_src
-****** dired movie player
+*** dired movie player
 #+begin_src emacs-lisp
   (defvar dired-mplayer-program "/usr/bin/mplayer")
 
@@ -1812,13 +1813,18 @@ Alert for multiple email accounts
 	  (shell-command command))))
 #+end_src
 
-*** Discord
+** Browsers
+*** w3m
+**** install
+#+begin_src emacs-lisp
+  (use-package w3m :ensure t)
+  (use-package helm-w3m :ensure t)
+#+end_src
+** Discord
+#+begin_src emacs-lisp
   (use-package elcord :ensure t :init (require 'elcord)(elcord-mode))
-
-#+RESULTS:
-
-
-*** Erc
+#+end_src
+** Erc
 #+begin_src emacs-lisp
       ;; Set our nickname & real-name as constant variables
       (setq
@@ -1944,4 +1950,66 @@ Alert for multiple email accounts
   (use-package docker
   :ensure t
   :bind ("C-c d" . docker))
+#+end_src
+** Auto Insert Mode
+*** C++
+#+begin_src emacs-lisp
+  (eval-after-load 'autoinsert
+  '(define-auto-insert
+     '("\\.\\(CC?\\|cc\\|cxx\\|cpp\\|c++\\)\\'" . "C++ skeleton")
+     '("Short description: "
+       "/*" \n
+       (file-name-nondirectory (buffer-file-name))
+       " -- " str \n
+       " */" > \n \n
+       "#include <iostream>" \n \n
+       "using namespace std;" \n \n
+       "main()" \n
+       "{" \n
+       > _ \n
+       "}" > \n)))
+#+end_src
+*** C
+#+begin_src emacs-lisp
+  (eval-after-load 'autoinsert
+  '(define-auto-insert '("\\.c\\'" . "C skeleton")
+     '(
+       "Short description: "
+       "/**\n * "
+       (file-name-nondirectory (buffer-file-name))
+       " -- " str \n
+       " *" \n
+       " * Written on " (format-time-string "%A, %e %B %Y.") \n
+       " */" > \n \n
+       "#include <stdio.h>" \n
+       "#include \""
+       (file-name-sans-extension
+        (file-name-nondirectory (buffer-file-name)))
+       ".h\"" \n \n
+       "int main()" \n
+       "{" > \n
+       > _ \n
+       "}" > \n)))
+#+end_src
+*** Perl
+#+begin_src emacs-lisp
+  (eval-after-load 'autoinsert
+  '(define-auto-insert '(perl-mode . "Perl skeleton")
+     '("Description: "
+       "#!/usr/bin/env perl" \n
+       \n
+       "use strict;" \n
+       "use warnings;" \n \n
+       _ \n \n
+       "__END__" "\n\n"
+       "=head1 NAME" "\n\n"
+       str "\n\n"
+       "=head1 SYNOPSIS" "\n\n\n"
+       "=head1 DESCRIPTION" "\n\n\n"
+       "=head1 COPYRIGHT" "\n\n"
+       "Copyright (c) " (substring (current-time-string) -4) " "
+       (getenv "ORGANIZATION") | (progn user-full-name) "\n\n"
+       "This library is free software; you can redistribute it and/or" "\n"
+       "modify it under the same terms as Perl itself." "\n\n"
+       "=cut" "\n")))
 #+end_src
