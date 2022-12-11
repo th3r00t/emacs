@@ -933,6 +933,7 @@ https://magit.vc/
 #+begin_src emacs-lisp
   (use-package dap-mode
     :ensure t)
+  (use-package dap-cpptools :ensure t)
 #+end_src
 **** Configuration
 #+begin_src emacs-lisp
@@ -1098,6 +1099,21 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 #+end_src
 *** sass
 #+begin_src emacs-lisp
+#+end_src
+*** Rust
+#+begin_src emacs-lisp
+  (use-package rustic :ensure t)
+  (defun rustic-mode-auto-save-hook ()
+  "Enable auto-saving in rustic-mode buffers."
+  (when buffer-file-name
+    (setq-local compilation-ask-about-save nil)))
+  (add-hook 'rustic-mode-hook 'rustic-mode-auto-save-hook)
+  (use-package cargo-mode
+  :config
+  (add-hook 'rust-mode-hook 'cargo-minor-mode))
+  (setq rustic-rustfmt-args "+nightly")
+  (setq rustic-rustfmt-config-alist '((hard_tabs . t) (skip_children . nil)))
+  (setq rustic-analyzer-command '("~/.cargo/bin/rust-analyzer"))
 #+end_src
 ** Completion System
 *** Pop-up
