@@ -933,7 +933,6 @@ https://magit.vc/
 #+begin_src emacs-lisp
   (use-package dap-mode
     :ensure t)
-  (use-package dap-cpptools :ensure t)
 #+end_src
 **** Configuration
 #+begin_src emacs-lisp
@@ -1065,33 +1064,63 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 #+end_src
 *** Python
 #+begin_src emacs-lisp
-  (dap-register-debug-template "pyShelf"
-  (list :type "python"
-        :args ""
-        :cwd "~/Repos/pyShelf"
-        :target-module "pyShelf.py"
-        :request "launch"
-        :name "pyShelf"))
+  (use-package eglot :ensure t)
+  (use-package lsp-pyright
+    :after lsp-mode
+    :custom
+    (lsp-pyright-auto-import-completions nil)
+    (lsp-pyright-typechecking-mode "off")
+    )
+  (use-package python
+    :straight (:type built-in)
+    :init
+    (add-to-list 'all-the-icons-icon-alist
+		 '("\\.py$" all-the-icons-alltheicon "python" :height 1.1 :face all-the-icons-dblue))
+    :custom
+    (python-shell-interpreter "ipython")
+    (python-shell-interpreter-args "-i --simple-prompt")
+    (python-indent-guess-indent-offset-verbose nil)
+    :bind
+    ( :map python-mode-map
+      ("C-c r" . python-indent-shift-right)
+      ("C-c l" . python-indent-shift-left))
+    :hook
+    ;; With pyls:
+    ;; pip install python-language-server flake8 pyls-black(optional) pyls-isort(optional)
+    ;; With pyright
+    ;; sudo npm install -g pyright && pip install flake8 black(optional)
+    ;; NOTE: these hooks runs in reverse order
+    (python-mode . (lambda () (setq-local company-prescient-sort-length-enable nil)))
+    (python-mode . (lambda () (unless (and buffer-file-name (file-in-directory-p buffer-file-name "~/.virtualenvs/"))
+				(flycheck-mode))))
+    ;; (python-mode . lsp-deferred)
+    ;;(python-mode . (lambda () (fk/add-local-hook 'before-save-hook 'eglot-format-buffer)))
+    (python-mode . eglot-ensure)
+    ;; importmagic runs ~100mb ipython process per python file, and it does not
+    ;; always find imports, 60%-70% maybe. I stop using this, but still want to keep.
+    ;; (python-mode . importmagic-mode)
+    ;; (python-mode . fk/activate-pyvenv)
+    (python-mode . (lambda ()
+		     (when (and (buffer-file-name)
+				(string=
+				 (car (last (f-split (f-parent (buffer-file-name)))))
+				 "tests"))
+		       )))
+    (python-mode . (lambda () (setq-local fill-column 88)))
+    :config
+    (defvar python-walrus-operator-regexp ":=")
+
+    ;; Make walrus operator ":=" more visible
+    (font-lock-add-keywords
+     'python-mode
+     `((,python-walrus-operator-regexp 0 'escape-glyph t))
+     'set))
+  (use-package blacken
+    :commands blacken-mode blacken-buffer)
+  (use-package py-isort
+    :commands py-isort-buffer)
+
 #+end_src
-#+begin_src emacs-lisp
-  (use-package pyvenv :ensure t)
-#+end_src
-#+begin_src emacs-lisp
-  (use-package pipenv
-  :hook (python-mode . pipenv-mode)
-  :init
-  (setq
-   pipenv-projectile-after-switch-function
-   #'pipenv-projectile-after-switch-extended))
-#+end_src
-  (dap-register-debug-template "pyShelf"
-  (list :type "python"
-        :args "-i"
-        :cwd "~/Repos/pyShelf"
-        :env '(("DEBUG" . "1"))
-        :target-module (expand-file-name "~/Repos/pyShelf/pyShelf.py")
-        :request "launch"
-        :name "pyShelf"))
 *** Vue js
 #+begin_src emacs-lisp
   ;; (use-package vue-mode :ensure t)
@@ -1302,11 +1331,11 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-; m s") 'emms-stop)
   (global-set-key (kbd "C-; m S") 'emms-start)
   (global-set-key (kbd "C-; d") 'insert-date)
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-  (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
+  ;; (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  ;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  ;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  ;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+  ;; (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
   (global-set-key (kbd "M-[") 'insert-pair)
   (global-set-key (kbd "M-{") 'insert-pair)
   ;; (global-set-key (kbd "M-\"") 'insert-pair)
