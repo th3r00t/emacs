@@ -145,6 +145,33 @@ https://github.com/cofi/evil-leader
   (global-set-key (kbd "C-c b") 'org-iswitchb)
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "C-c c") 'org-capture)
+
+  (add-hook 'org-mode-hook 'org-indent-mode)
+#+end_src
+todo keywords
+#+begin_src emacs-lisp
+      (setq org-todo-keywords
+	    '(
+    (sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
+    (sequence "BUG" "IN-PROCESSS" "VERIFY" "|" "DONE" "DELEGATED")
+  ))
+#+end_src
+custom faces
+#+begin_src emacs-lisp
+  (custom-theme-set-faces
+   'user
+   '(org-block ((t (:inherit fixed-pitch))))
+   '(org-code ((t (:inherit (shadow fixed-pitch)))))
+   '(org-document-info ((t (:foreground "dark orange"))))
+   '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+   '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
+   '(org-link ((t (:foreground "royal blue" :underline t))))
+   '(org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-property-value ((t (:inherit fixed-pitch))) t)
+   '(org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-table ((t (:inherit fixed-pitch :foreground "#83a598"))))
+   '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
+   '(org-verbatim ((t (:inherit (shadow fixed-pitch))))))
 #+end_src
 *** Org-Babel
 #+begin_src emacs-lisp
@@ -165,13 +192,53 @@ https://www.orgroam.com/manual.html#Getting-Started
     (setq org-roam-directory (file-truename "~/org/.org-roam"))
     (org-roam-db-autosync-mode))
 #+end_src
+**** config
+#+begin_src emacs-lisp
+  (add-to-list 'display-buffer-alist
+	       '("\\*org-roam\\*"
+		 (display-buffer-in-side-window)
+		 (side . right)
+		 (slot . 0)
+		 (window-width . 0.33)
+		 (window-parameters . ((no-other-window . t)
+				       (no-delete-other-windows . t)))))
+  (setq org-roam-dailies-directory "daily/")
+
+  (setq org-roam-dailies-capture-templates
+	'(("d" "default" entry
+	   "* %?"
+	   :target (file+head "%<%Y-%m-%d>.org"
+			      "#+title: %<%Y-%m-%d>\n"))))
+
+  (require 'org-roam-export)
+
+  (use-package deft
+    :after org
+    :bind
+    ("C-c n d" . deft)
+    :custom
+    (deft-recursive t)
+    (deft-use-filter-string-for-filename t)
+    (deft-default-extension "org")
+    (deft-directory org-roam-directory))
+  (use-package org-roam-ui
+  :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+#+end_src
 
 #+RESULTS:
 : t
 
-**** config
-#+begin_src emacs-lisp
-#+end_src
 *** Hydra
 **** use-package
 #+begin_src emacs-lisp
@@ -274,6 +341,21 @@ https://www.orgroam.com/manual.html#Getting-Started
   ;;
   ;; # -*- buffer-auto-save-file-name: nil; -*-
 #+end_src
+*** Org Protocol
+#+begin_src emacs-lisp
+  (require 'org-roam-protocol)
+  (setq org-roam-ref-capture-templates
+        '(("r" "ref" plain (function org-roam--capture-get-point)
+           "%?"
+           :file-name "websites/${slug}"
+           :head "#+SETUPFILE:./browser.org
+#+ROAM_KEY: ${ref}
+#+HUGO_SLUG: ${slug}
+#+TITLE: ${title}
+
+- source :: ${ref}"
+           :unnarrowed t)))
+#+end_src
 *** Capture Templates
 **** Journal
 #+begin_src emacs-lisp
@@ -307,14 +389,218 @@ https://www.orgroam.com/manual.html#Getting-Started
 	   :unnarrowed t)
 
 	  ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: project")
+	   :unnarrowed t)
+	  ("t" "TODO" plain "* TODO %?\nDEADLINE: <%(org-read-date nil nil \"+2d\")>"
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: project")
 	   :unnarrowed t)
 	  ))
 #+end_src
+
+#+RESULTS:
+| d | default | plain | %? | :if-new | (file+head %<%Y%m%d%H%M%S>-${slug}.org #+title: ${title} |
+
 ***** Future Capture
 #+begin_src emacs-lisp
 
 #+end_src
+*** Org-Bullets
+#+begin_src emacs-lisp
+  (use-package org-bullets :ensure t)
+  (require 'org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+#+RESULTS:
+| (lambda nil (org-bullets-mode 1)) | org-indent-mode | evil-collection-mu4e-org-set-header-to-normal-mode | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | #<subr F616e6f6e796d6f75732d6c616d626461_anonymous_lambda_4> | (lambda nil evil-org-mode) | (lambda nil (evil-org-mode)) | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes |
+*** Org-Roam w\ Agenda
+#+begin_src emacs-lisp
+    (defun vulpea-project-p ()
+    "Return non-nil if current buffer has any todo entry.
+
+  TODO entries marked as done are ignored, meaning the this
+  function returns nil if current buffer contains only completed
+  tasks."
+    (seq-find                                 ; (3)
+     (lambda (type)
+       (eq type 'todo))
+     (org-element-map                         ; (2)
+         (org-element-parse-buffer 'headline) ; (1)
+         'headline
+       (lambda (h)
+         (org-element-property :todo-type h)))))
+
+  (defun vulpea-project-update-tag ()
+      "Update PROJECT tag in the current buffer."
+      (when (and (not (active-minibuffer-window))
+                 (vulpea-buffer-p))
+        (save-excursion
+          (goto-char (point-min))
+          (let* ((tags (vulpea-buffer-tags-get))
+                 (original-tags tags))
+            (if (vulpea-project-p)
+                (setq tags (cons "project" tags))
+              (setq tags (remove "project" tags)))
+
+            ;; cleanup duplicates
+            (setq tags (seq-uniq tags))
+
+            ;; update tags if changed
+            (when (or (seq-difference tags original-tags)
+                      (seq-difference original-tags tags))
+              (apply #'vulpea-buffer-tags-set tags))))))
+
+  (defun vulpea-buffer-p ()
+    "Return non-nil if the currently visited buffer is a note."
+    (and buffer-file-name
+         (string-prefix-p
+          (expand-file-name (file-name-as-directory org-roam-directory))
+          (file-name-directory buffer-file-name))))
+
+  (defun vulpea-project-files ()
+      "Return a list of note files containing 'project' tag." ;
+      (seq-uniq
+       (seq-map
+        #'car
+        (org-roam-db-query
+         [:select [nodes:file]
+          :from tags
+          :left-join nodes
+          :on (= tags:node-id nodes:id)
+          :where (like tag (quote "%\"project\"%"))]))))
+
+  (defun vulpea-agenda-files-update (&rest _)
+    "Update the value of `org-agenda-files'."
+    (setq org-agenda-files (vulpea-project-files)))
+
+  (add-hook 'find-file-hook #'vulpea-project-update-tag)
+  (add-hook 'before-save-hook #'vulpea-project-update-tag)
+
+  (advice-add 'org-agenda :before #'vulpea-agenda-files-update)
+  (advice-add 'org-todo-list :before #'vulpea-agenda-files-update)
+
+  ;; functions borrowed from `vulpea' library
+  ;; https://github.com/d12frosted/vulpea/blob/6a735c34f1f64e1f70da77989e9ce8da7864e5ff/vulpea-buffer.el
+
+  (defun vulpea-buffer-tags-get ()
+    "Return filetags value in current buffer."
+    (vulpea-buffer-prop-get-list "filetags" "[ :]"))
+
+  (defun vulpea-buffer-tags-set (&rest tags)
+    "Set TAGS in current buffer.
+
+  If filetags value is already set, replace it."
+    (if tags
+        (vulpea-buffer-prop-set
+         "filetags" (concat ":" (string-join tags ":") ":"))
+      (vulpea-buffer-prop-remove "filetags")))
+
+  (defun vulpea-buffer-tags-add (tag)
+    "Add a TAG to filetags in current buffer."
+    (let* ((tags (vulpea-buffer-tags-get))
+           (tags (append tags (list tag))))
+      (apply #'vulpea-buffer-tags-set tags)))
+
+  (defun vulpea-buffer-tags-remove (tag)
+    "Remove a TAG from filetags in current buffer."
+    (let* ((tags (vulpea-buffer-tags-get))
+           (tags (delete tag tags)))
+      (apply #'vulpea-buffer-tags-set tags)))
+
+  (defun vulpea-buffer-prop-set (name value)
+    "Set a file property called NAME to VALUE in buffer file.
+  If the property is already set, replace its value."
+    (setq name (downcase name))
+    (org-with-point-at 1
+      (let ((case-fold-search t))
+        (if (re-search-forward (concat "^#\\+" name ":\\(.*\\)")
+                               (point-max) t)
+            (replace-match (concat "#+" name ": " value) 'fixedcase)
+          (while (and (not (eobp))
+                      (looking-at "^[#:]"))
+            (if (save-excursion (end-of-line) (eobp))
+                (progn
+                  (end-of-line)
+                  (insert "\n"))
+              (forward-line)
+              (beginning-of-line)))
+          (insert "#+" name ": " value "\n")))))
+
+  (defun vulpea-buffer-prop-set-list (name values &optional separators)
+    "Set a file property called NAME to VALUES in current buffer.
+  VALUES are quoted and combined into single string using
+  `combine-and-quote-strings'.
+  If SEPARATORS is non-nil, it should be a regular expression
+  matching text that separates, but is not part of, the substrings.
+  If nil it defaults to `split-string-default-separators', normally
+  \"[ \f\t\n\r\v]+\", and OMIT-NULLS is forced to t.
+  If the property is already set, replace its value."
+    (vulpea-buffer-prop-set
+     name (combine-and-quote-strings values separators)))
+
+  (defun vulpea-buffer-prop-get (name)
+    "Get a buffer property called NAME as a string."
+    (org-with-point-at 1
+      (when (re-search-forward (concat "^#\\+" name ": \\(.*\\)")
+                               (point-max) t)
+        (buffer-substring-no-properties
+         (match-beginning 1)
+         (match-end 1)))))
+
+  (defun vulpea-buffer-prop-get-list (name &optional separators)
+    "Get a buffer property NAME as a list using SEPARATORS.
+  If SEPARATORS is non-nil, it should be a regular expression
+  matching text that separates, but is not part of, the substrings.
+  If nil it defaults to `split-string-default-separators', normally
+  \"[ \f\t\n\r\v]+\", and OMIT-NULLS is forced to t."
+    (let ((value (vulpea-buffer-prop-get name)))
+      (when (and value (not (string-empty-p value)))
+        (split-string-and-unquote value separators))))
+
+  (defun vulpea-buffer-prop-remove (name)
+    "Remove a buffer property called NAME."
+    (org-with-point-at 1
+      (when (re-search-forward (concat "\\(^#\\+" name ":.*\n?\\)")
+                               (point-max) t)
+        (replace-match ""))))
+#+end_src
+*** Calendar With Org
+#+begin_src emacs-lisp
+  (use-package calfw :ensure t)
+  (use-package calfw-org :ensure t)
+  (use-package calfw-ical :ensure t)
+  (require 'calfw)
+  (require 'calfw-org)
+  (require 'calfw-ical)
+#+end_src
+
+#+begin_src emacs-lisp
+  (setq cfw:org-agenda-schedule-args '(:timestamp))
+  (setq cfw:org-overwrite-default-keybinding t)
+#+end_src
+#+begin_src emacs-lisp
+  (defun my/open-calendar ()
+  (interactive)
+  (cfw:open-calendar-buffer
+   :contents-sources
+   (list
+    (cfw:org-create-source "Green")  ; orgmode source
+    (cfw:ical-create-source "gcal" "https://calendar.google.com/calendar/ical/myoung0083%40gmail.com/private-9afcd7a82aa7dee05fb9311f2178a2fc/basic.ics" "IndianRed") ; google calendar ICS
+   )))
+#+end_src
+
+#+RESULTS:
+: my-open-calendar
+*** Org-Roam-Timestamps
+#+begin_src emacs-lisp
+  (use-package org-roam-timestamps
+  :after org-roam
+  :config (org-roam-timestamps-mode))
+#+end_src
+#+begin_src emacs-lisp
+  (setq org-roam-timestamps-parent-file t)
+#+end_src
+
 ** Custom Functions
 *** Org goto project todo
 #+begin_src emacs-lisp
@@ -504,6 +790,66 @@ https://www.orgroam.com/manual.html#Getting-Started
 	  (system-time-locale "en_US"))
       (insert (format-time-string format))))
 #+end_src
+*** About Emacs
+#+begin_src emacs-lisp
+  (defhydra my/hydra-about-emacs ()
+  "
+About Emacs                                                        [_q_] quit
+^^---------------------------------------------------------------------------
+         PID:    %s(emacs-pid)
+      Uptime:    %s(emacs-uptime)
+   Init time:    %s(emacs-init-time)
+   Directory:    %s(identity user-emacs-directory)
+Invoked from:    %s(concat invocation-directory invocation-name)
+     Version:    %s(identity emacs-version)
+
+User Info
+^^---------------------------------------------------------------------------
+   User name:    %s(user-full-name)
+Login (real):    %s(user-login-name) (%s(user-real-login-name))
+  UID (real):    %s(user-uid) (%s(user-real-uid))
+  GID (real):    %s(group-gid) (%s(group-real-gid))
+Mail address:    %s(identity user-mail-address)
+"
+  ("q" nil nil))
+
+(global-set-key (kbd "C-h C-a") #'my/hydra-about-emacs/body)
+#+end_src
+*** System Info
+#+begin_src emacs-lisp
+  (defhydra hydra-system-info ()
+  "
+System Info                                                        [_q_] quit
+^^---------------------------------------------------------------------------
+    System name:    %s(system-name)
+    System type:    %s(identity system-type)
+  System config:    %s(identity system-configuration)
+
+Memory
+^^---------------------------------------------------------------------------
+           Used:    %s(format \"%0.0f percent\"
+                              (* 100 (- 1 (/ (cl-second (memory-info))
+                                             (float (cl-first (memory-info)))))))
+       Free RAM:    %s(format \"%0.1f GB (of %0.1f GB)\"
+                              (/ (float (cl-second (memory-info))) 1048576)
+                              (/ (float (cl-first (memory-info))) 1048576))
+      Free swap:    %s(format \"%0.1f GB (of %0.1f GB)\"
+                              (/ (float (cl-fourth (memory-info))) 1048576)
+                              (/ (float (cl-third (memory-info))) 1048576))
+    Pure memory:    %s(format \"%0.1f GB\" (/ (float pure-bytes-used) 1048576))
+
+Garbage Collection
+^^---------------------------------------------------------------------------
+       GCs done:    %`gcs-done
+    GCs elapsed:    %s(format-seconds \"%M, %S\" gc-elapsed)
+ Cons threshold:    %`gc-cons-threshold
+Cons percentage:    %`gc-cons-percentage
+"
+  ("q" nil nil))
+
+(global-set-key (kbd "C-h C-s") #'hydra-system-info/body)
+#+end_src
+
 ** Ui Configurations
 Configuration settings that adjust the user experience
 *** Font
@@ -522,7 +868,7 @@ Configuration settings that adjust the user experience
 #+end_src
 *** Highlight Line
 #+begin_src emacs-lisp
-  (global-hl-line-mode)
+  (global-hl-line-mode 1)
 #+end_src
 *** AutoPairs
 #+begin_src emacs-lisp
@@ -767,10 +1113,15 @@ https://github.com/cofi/evil-leader
   (setq fci-rule-color "darkblue")
   (add-hook 'prog-mode-hook #'fci-mode)
 #+end_src
+*** Beacon
+#+begin_src emacs-lisp
+  (use-package beacon :ensure t)
+  (beacon-mode 1)
+#+end_src
+
 ** General Configurations
 *** Default Overrides
 **** yes-no
-*****
 #+begin_src emacs-lisp
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
@@ -855,6 +1206,7 @@ https://projectile.mx/
 https://magit.vc/
 #+begin_src emacs-lisp
   (use-package magit :ensure t)
+  (setq magit-define-global-key-bindings 't)
 #+end_src
 ** Development Plugins (General)
 *** Indent Handling
@@ -927,6 +1279,17 @@ https://magit.vc/
   (setq lsp-completion-show-detail t)
   (setq lsp-completion-show-kind t)
   (setq lsp-enable-snippet t)
+  (setq lsp-rust-analyzer-cargo-watch-command "clippy")
+  (setq lsp-eldoc-render-all t)
+  (setq lsp-idle-delay 0.6)
+  ;; enable / disable the hints as you prefer:
+  (setq lsp-rust-analyzer-server-display-inlay-hints t)
+  (setq lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+  (setq lsp-rust-analyzer-display-chaining-hints t)
+  (setq lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+  (setq lsp-rust-analyzer-display-closure-return-type-hints t)
+  (setq lsp-rust-analyzer-display-parameter-hints nil)
+  (setq lsp-rust-analyzer-display-reborrow-hints nil)
 #+end_src
 *** DAP
 **** Install
@@ -942,10 +1305,31 @@ https://magit.vc/
     :hook ((python-mode . dap-ui-mode) (python-mode . dap-mode))
     :config
     (require 'dap-python)
+    (require 'dap-cpptools)
     (setq dap-python-debugger 'debugpy)
     (add-hook 'dap-stopped-hook
 	      (lambda (arg) (call-interactively #'dap-hydra))))
+  (with-eval-after-load 'dap-cpptools
+    ;; Add a template specific for debugging Rust programs.
+    ;; It is used for new projects, where I can M-x dap-edit-debug-template
+    (dap-register-debug-template "Rust::CppTools Run Configuration"
+				 (list :type "cppdbg"
+				       :request "launch"
+				       :name "Rust::Run"
+				       :MIMode "gdb"
+				       :miDebuggerPath "rust-gdb"
+				       :environment []
+				       :program "${workspaceFolder}/target/debug/hello / replace with binary"
+				       :cwd "${workspaceFolder}"
+				       :console "external"
+				       :dap-compilation "cargo build"
+				       :dap-compilation-dir "${workspaceFolder}")))
+
+  (with-eval-after-load 'dap-mode
+    (setq dap-default-terminal-kind "integrated") ;; Make sure that terminal programs open a term for I/O in an Emacs buffer
+    (dap-auto-configure-mode +1))
 #+end_src
+
 #+begin_src emacs-lisp
   (dap-mode 1)
   (dap-ui-mode 1)
@@ -988,7 +1372,9 @@ https://magit.vc/
 *** YaS Snippets
 #+begin_src emacs-lisp
   (use-package yasnippet :ensure t :init (require 'yasnippet) :config (yas-global-mode 1))
+  (use-package yasnippet-snippets :ensure t)
 #+end_src
+
 *** Doom Snippets
 #+begin_src emacs-lisp
   (use-package doom-snippets
@@ -1133,15 +1519,17 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
 #+begin_src emacs-lisp
   (use-package rustic :ensure t)
   (defun rustic-mode-auto-save-hook ()
-  "Enable auto-saving in rustic-mode buffers."
-  (when buffer-file-name
-    (setq-local compilation-ask-about-save nil)))
+    "Enable auto-saving in rustic-mode buffers."
+    (when buffer-file-name
+      (setq-local compilation-ask-about-save nil)))
   (add-hook 'rustic-mode-hook 'rustic-mode-auto-save-hook)
   (use-package cargo-mode
-  :config
-  (add-hook 'rust-mode-hook 'cargo-minor-mode))
+    :config
+    (add-hook 'rust-mode-hook 'cargo-minor-mode))
   (setq rustic-rustfmt-args "+nightly")
   (setq rustic-rustfmt-config-alist '((hard_tabs . t) (skip_children . nil)))
+  (setq rustic-lsp-server 'rust-analyzer)
+  ;; (setq rustic-lsp-client 'eglot)
   (setq rustic-analyzer-command '("~/.cargo/bin/rust-analyzer"))
 #+end_src
 ** Completion System
@@ -1205,7 +1593,7 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
     (helm-mode 1)
     :init
     (require 'helm)
-    (require 'helm-config)
+    ;; (require 'helm-config)
     )
 #+end_src
 **** Configure
@@ -1987,7 +2375,39 @@ Alert for multiple email accounts
 #+end_src
 ** Enable Theme
 #+begin_src emacs-lisp
-  (load-theme 'doom-tokyo-night t)
+  ;; (load-theme 'doom-tokyo-night t)
+  (load-theme 'doom-dracula t)
+#+end_src
+
+#+RESULTS:
+: t
+
+** Copilot
+#+begin_src emacs-lisp
+    (use-package copilot
+    :straight (:host github :repo "zerolfx/copilot.el"
+		     :files ("dist" "copilot.el"))
+    :ensure t)
+
+    (add-hook 'prog-mode-hook 'copilot-mode)
+
+    (customize-set-variable 'copilot-enable-predicates '(evil-insert-state-p))
+
+    ; complete by copilot first, then company-mode
+  (defun my-tab ()
+    (interactive)
+    (or (copilot-accept-completion)
+	(company-indent-or-complete-common nil)))
+
+  ; modify company-mode behaviors
+  (with-eval-after-load 'company
+    ; disable inline previews
+    (delq 'company-preview-if-just-one-frontend company-frontends)
+    ; enable tab completion
+    (define-key company-mode-map (kbd "<tab>") 'my-tab)
+    (define-key company-mode-map (kbd "TAB") 'my-tab)
+    (define-key company-active-map (kbd "<tab>") 'my-tab)
+    (define-key company-active-map (kbd "TAB") 'my-tab))
 #+end_src
 * Testing Configs
 #+begin_src emacs-lisp
