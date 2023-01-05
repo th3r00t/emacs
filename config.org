@@ -1418,6 +1418,9 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
   (setq cppcm-extra-preprocss-flags-from-user '("-I/usr/src/linux/include" "-DNDEBUG"))
 #+end_src
 *** Python
+using pyenv install which ever version of python you wish to use for development. Set it as the local env for the folder you are working in and pip install -r requirements.txt into that env.
+Then in emacs M-x pyenv-mode-set from within the project you are editing.
+M-x lsp-restart-workspace
 - With pyls:
   #+begin_src sh :tangle no
     pip install python-language-server flake8 pyls-black(optional) pyls-isort(optional)
@@ -1439,7 +1442,7 @@ NOTE: these hooks runs in reverse order
     :straight (:type built-in)
     :init
     (add-to-list 'all-the-icons-icon-alist
-		 '("\\.py$" all-the-icons-alltheicon "python" :height 1.1 :face all-the-icons-dblue))
+                 '("\\.py$" all-the-icons-alltheicon "python" :height 1.1 :face all-the-icons-dblue))
     :custom
     (python-shell-interpreter "ipython")
     (python-shell-interpreter-args "-i --simple-prompt")
@@ -1450,8 +1453,8 @@ NOTE: these hooks runs in reverse order
       ("C-c l" . python-indent-shift-left))
     :hook
     (python-mode . (lambda () (setq-local company-prescient-sort-length-enable nil)))
-    (python-mode . (lambda () (unless (and buffer-file-name (file-in-directory-p buffer-file-name "~/.virtualenvs/"))
-				(flycheck-mode))))
+    (python-mode . (lambda () (unless (and buffer-file-name (file-in-directory-p buffer-file-name "~/.local/share/virtualenvs/"))
+                                 (flycheck-mode))))
     ;;(python-mode . lsp-deferred)
     (python-mode . (lambda () (fk/add-local-hook 'before-save-hook 'eglot-format-buffer)))
     (python-mode . eglot-ensure)
@@ -1460,11 +1463,11 @@ NOTE: these hooks runs in reverse order
     ;; (python-mode . importmagic-mode)
     ;; (python-mode . fk/activate-pyvenv)
     (python-mode . (lambda ()
-		     (when (and (buffer-file-name)
-				(string=
-				 (car (last (f-split (f-parent (buffer-file-name)))))
-				 "tests"))
-		       )))
+                     (when (and (buffer-file-name)
+                                (string=
+                                 (car (last (f-split (f-parent (buffer-file-name)))))
+                                 "tests"))
+                       )))
     (python-mode . (lambda () (setq-local fill-column 88)))
     :config
     (defvar python-walrus-operator-regexp ":=")
@@ -1480,6 +1483,9 @@ NOTE: these hooks runs in reverse order
     :commands py-isort-buffer)
 
 #+end_src
+
+#+RESULTS:
+
 *** Vue js
 #+begin_src emacs-lisp
   ;; (use-package vue-mode :ensure t)
@@ -2450,5 +2456,10 @@ Alert for multiple email accounts
        "This library is free software; you can redistribute it and/or" "\n"
        "modify it under the same terms as Perl itself." "\n\n"
        "=cut" "\n")))
+#+end_src
+** Python
+#+begin_src emacs-lisp
+  (use-package pyenv-mode :ensure t)
+  (pyenv-mode)
 #+end_src
 
