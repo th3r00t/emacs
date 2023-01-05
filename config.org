@@ -7,7 +7,7 @@ https://orgmode.org/manual/Initial-visibility.html
   (setq evil-want-keybinding nil)
 #+end_src
 * Emacs Configuration
-** Notes
+** 1. Notes
 https://orgmode.org/manual/Structure-Templates.html
 Insert Source Block C-c C-,
 *** To Be Installed
@@ -19,12 +19,12 @@ projectile
 magit
 kill ring
 ag
-** Load Paths
+** 2. Load Paths
 #+begin_src emacs-lisp
   (add-to-list 'load-path "/usr/share/emacs/site-lisp")
   (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
 #+end_src
-** Evil Mode
+** 3. Evil Mode
 https://github.com/emacs-evil/evil-collection
 https://github.com/cofi/evil-leader
 #+begin_src emacs-lisp
@@ -44,100 +44,7 @@ https://github.com/cofi/evil-leader
   (setq evil-want-fine-undo t)
   (advice-add 'undo-auto--last-boundary-amalgamating-number :override #'ignore)
 #+end_src
-** EXWM
-    (fringe-mode 1)
-    (setq display-time-default-load-average nil)
-  (display-time-mode t)
-  (server-start)
-  (require 'exwm)
-    (require 'exwm-config)
-  (setq exwm-workspace-number 4)
-  ;; All buffers created in EXWM mode are named "*EXWM*". You may want to
-;; change it in `exwm-update-class-hook' and `exwm-update-title-hook', which
-;; are run when a new X window class name or title is available.  Here's
-;; some advice on this topic:
-;; + Always use `exwm-workspace-rename-buffer` to avoid naming conflict.
-;; + For applications with multiple windows (e.g. GIMP), the class names of
-;    all windows are probably the same.  Using window titles for them makes
-;;   more sense.
-;; In the following example, we use class names for all windows except for
-;; Java applications and GIMP.
-(add-hook 'exwm-update-class-hook
-          (lambda ()
-            (unless (or (string-prefix-p "sun-awt-X11-" exwm-instance-name)
-                        (string= "gimp" exwm-instance-name))
-              (exwm-workspace-rename-buffer exwm-class-name))))
-(add-hook 'exwm-update-title-hook
-          (lambda ()
-            (when (or (not exwm-instance-name)
-                      (string-prefix-p "sun-awt-X11-" exwm-instance-name)
-                      (string= "gimp" exwm-instance-name))
-              (exwm-workspace-rename-buffer exwm-title))))
-
-;; Global keybindings can be defined with `exwm-input-global-keys'.
-;; Here are a few examples:
-(setq exwm-input-global-keys
-      `(
-        ;; Bind "s-r" to exit char-mode and fullscreen mode.
-        ([?\s-r] . exwm-reset)
-        ;; Bind "s-w" to switch workspace interactively.
-        ([?\s-w] . exwm-workspace-switch)
-        ;; Bind "s-0" to "s-9" to switch to a workspace by its index.
-        ,@(mapcar (lambda (i)
-                    `(,(kbd (format "s-%d" i)) .
-                      (lambda ()
-                        (interactive)
-                        (exwm-workspace-switch-create ,i))))
-                  (number-sequence 0 9))
-        ;; Bind "s-&" to launch applications ('M-&' also works if the output
-        ;; buffer does not bother you).
-        ([?\s-&] . (lambda (command)
-		     (interactive (list (read-shell-command "$ ")))
-		     (start-process-shell-command command nil command)))
-        ;; Bind "s-<f2>" to "slock", a simple X display locker.
-        ([s-f2] . (lambda ()
-		    (interactive)
-		    (start-process "" nil "/usr/bin/slock")))))
-
-;; To add a key binding only available in line-mode, simply define it in
-;; `exwm-mode-map'.  The following example shortens 'C-c q' to 'C-q'.
-(define-key exwm-mode-map [?\C-q] #'exwm-input-send-next-key)
-
-;; The following example demonstrates how to use simulation keys to mimic
-;; the behavior of Emacs.  The value of `exwm-input-simulation-keys` is a
-;; list of cons cells (SRC . DEST), where SRC is the key sequence you press
-;; and DEST is what EXWM actually sends to application.  Note that both SRC
-;; and DEST should be key sequences (vector or string).
-(setq exwm-input-simulation-keys
-      '(
-        ;; movement
-        ([?\C-b] . [left])
-        ([?\M-b] . [C-left])
-        ([?\C-f] . [right])
-        ([?\M-f] . [C-right])
-        ([?\C-p] . [up])
-        ([?\C-n] . [down])
-        ([?\C-a] . [home])
-        ([?\C-e] . [end])
-        ([?\M-v] . [prior])
-        ([?\C-v] . [next])
-        ([?\C-d] . [delete])
-        ([?\C-k] . [S-end delete])
-        ;; cut/paste.
-        ([?\C-w] . [?\C-x])
-        ([?\M-w] . [?\C-c])
-        ([?\C-y] . [?\C-v])
-        ;; search
-        ([?\C-s] . [?\C-f])))
-
-;; You can hide the minibuffer and echo area when they're not used, by
-;; uncommenting the following line.
-;(setq exwm-workspace-minibuffer-position 'bottom)
-
-;; Do not forget to enable EXWM. It will start by itself when things are
-;; ready.  You can put it _anywhere_ in your configuration.
-;; (exwm-enable)
-** Org Mode Configs
+** 5. Org Mode Configs
 *** General
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist '("\.org$" . org-mode))
@@ -148,7 +55,7 @@ https://github.com/cofi/evil-leader
 
   (add-hook 'org-mode-hook 'org-indent-mode)
 #+end_src
-todo keywords
+*todo keywords*
 #+begin_src emacs-lisp
       (setq org-todo-keywords
 	    '(
@@ -156,7 +63,7 @@ todo keywords
     (sequence "BUG" "IN-PROCESSS" "VERIFY" "|" "DONE" "DELEGATED")
   ))
 #+end_src
-custom faces
+*custom faces*
 #+begin_src emacs-lisp
   (custom-theme-set-faces
    'user
@@ -170,17 +77,62 @@ custom faces
    '(org-property-value ((t (:inherit fixed-pitch))) t)
    '(org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
    '(org-table ((t (:inherit fixed-pitch :foreground "#83a598"))))
-   '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
+   '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 1.0))))
    '(org-verbatim ((t (:inherit (shadow fixed-pitch))))))
 #+end_src
+*hide emphasis markers*
+#+begin_src emacs-lisp
+  (setq org-hide-emphasis-markers t)
+#+end_src
+*substitute list markers*
+#+begin_src emacs-lisp
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+#+end_src
+*variable pitch*
+#+begin_src emacs-lisp
+  (let* ((variable-tuple
+          (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
+                ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+                ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+                ((x-list-fonts "Verdana")         '(:font "Verdana"))
+                ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+                (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+         (base-font-color     (face-foreground 'default nil 'default))
+         (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+
+    (custom-theme-set-faces
+     'user
+     `(org-level-8 ((t (,@headline ,@variable-tuple))))
+     `(org-level-7 ((t (,@headline ,@variable-tuple))))
+     `(org-level-6 ((t (,@headline ,@variable-tuple))))
+     `(org-level-5 ((t (,@headline ,@variable-tuple))))
+     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.18))))
+     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.4))))
+     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.45))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 1.6 :underline nil))))))
+  (custom-theme-set-faces
+   'user
+   '(variable-pitch ((t (:family "ETBembo" :height 155 :weight thin))))
+   '(fixed-pitch ((t ( :family "Fira Code Retina" :height 155)))))
+  (add-hook 'org-mode-hook 'variable-pitch-mode)
+  (add-hook 'org-mode-hook 'visual-line-mode)
+#+end_src
+
 *** Org-Babel
 #+begin_src emacs-lisp
   (require 'ob-js)
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((python . t) (C . t) (shell . t) (sql . t) (emacs-lisp . t) (sqlite . t) (R . t)))
+   '((python . t) (C . t) (shell . t) (sql . t) (emacs-lisp . t) (sqlite . t) (R . t) (lisp . t)))
   (add-to-list 'org-babel-tangle-lang-exts '("js" . "js"))
 #+end_src
+
+#+RESULTS:
+: ((lisp . lisp) (rustic . rs) (js . js) (D . d) (C++ . cpp) (python . py) (emacs-lisp . el) (elisp . el))
+
 *** Org-Roam
 https://www.orgroam.com/manual.html#Getting-Started
 **** install
@@ -374,27 +326,30 @@ https://www.orgroam.com/manual.html#Getting-Started
 **** Org roam capture
 #+begin_src emacs-lisp
   (setq org-roam-capture-templates
-	'(("d" "default" plain
-	   "%?"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n")
-	   :unnarrowed t)
-	  ("l" "programming language" plain
-	   "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-	   :unnarrowed t)
+        '(("d" "default" plain
+           "%?"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n")
+           :unnarrowed t)
+          ("l" "programming language" plain
+           "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t)
 
-	  ("b" "book notes" plain
-	   "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-	   :unnarrowed t)
+          ("b" "book notes" plain
+           "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t)
 
-	  ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: project")
-	   :unnarrowed t)
-	  ("t" "TODO" plain "* TODO %?\nDEADLINE: <%(org-read-date nil nil \"+2d\")>"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: project")
-	   :unnarrowed t)
-	  ))
+          ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: project")
+           :unnarrowed t)
+          ("t" "TODO" plain "* TODO %?\nDEADLINE: <%(org-read-date nil nil \"+2d\")>"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: project")
+           :unnarrowed t)
+          ("c" "Configuration File" plain "#+PROPERTY:\theader-args\t:tangle ~/.config/%?\n* Install\n/add any required installations here./\n#+begin_src sh\t:tangle no\n\t\n#+end_src\n* Configuration\n/add your configuration here./\n#+begin_src sh\n\t\n#+end_src\n%U"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: project")
+           :unnarrowed t)
+          ))
 #+end_src
 
 #+RESULTS:
@@ -564,6 +519,10 @@ https://www.orgroam.com/manual.html#Getting-Started
                                (point-max) t)
         (replace-match ""))))
 #+end_src
+
+#+RESULTS:
+: vulpea-buffer-prop-remove
+
 *** Calendar With Org
 #+begin_src emacs-lisp
   (use-package calfw :ensure t)
@@ -601,7 +560,7 @@ https://www.orgroam.com/manual.html#Getting-Started
   (setq org-roam-timestamps-parent-file t)
 #+end_src
 
-** Custom Functions
+** 6. Custom Functions
 *** Org goto project todo
 #+begin_src emacs-lisp
   (defun my/org-projectile-goto-project-file ()
@@ -850,7 +809,7 @@ Cons percentage:    %`gc-cons-percentage
 (global-set-key (kbd "C-h C-s") #'hydra-system-info/body)
 #+end_src
 
-** Ui Configurations
+** 7. Ui Configurations
 Configuration settings that adjust the user experience
 *** Font
 #+begin_src emacs_lisp
@@ -1178,6 +1137,16 @@ https://www.emacswiki.org/emacs/TrampMode
 #+begin_src emacs-lisp
   (use-package restart-emacs :ensure t)
 #+end_src
+*** SLIME
+#+begin_src emacs-lisp
+  (load (expand-file-name "~/.roswell/helper.el"))
+  (use-package slime :ensure t)
+  (setq inferior-lisp-program "ros -Q run")
+#+end_src
+
+#+RESULTS:
+: sbcl
+
 ** Registers
 #+begin_src emacs-lisp
   (set-register ?e (cons 'file "~/.emacs.d/"))
@@ -1449,6 +1418,15 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
   (setq cppcm-extra-preprocss-flags-from-user '("-I/usr/src/linux/include" "-DNDEBUG"))
 #+end_src
 *** Python
+- With pyls:
+  #+begin_src sh :tangle no
+    pip install python-language-server flake8 pyls-black(optional) pyls-isort(optional)
+  #+end_src
+- With pyright
+  #+begin_src sh :tangle no
+    sudo npm install -g pyright && pip install flake8 black(optional)
+  #+end_src
+NOTE: these hooks runs in reverse order
 #+begin_src emacs-lisp
   (use-package eglot :ensure t)
   (use-package lsp-pyright
@@ -1471,16 +1449,11 @@ https://langroudi.co.uk/post/emacs_godot_csharp/
       ("C-c r" . python-indent-shift-right)
       ("C-c l" . python-indent-shift-left))
     :hook
-    ;; With pyls:
-    ;; pip install python-language-server flake8 pyls-black(optional) pyls-isort(optional)
-    ;; With pyright
-    ;; sudo npm install -g pyright && pip install flake8 black(optional)
-    ;; NOTE: these hooks runs in reverse order
     (python-mode . (lambda () (setq-local company-prescient-sort-length-enable nil)))
     (python-mode . (lambda () (unless (and buffer-file-name (file-in-directory-p buffer-file-name "~/.virtualenvs/"))
 				(flycheck-mode))))
-    ;; (python-mode . lsp-deferred)
-    ;;(python-mode . (lambda () (fk/add-local-hook 'before-save-hook 'eglot-format-buffer)))
+    ;;(python-mode . lsp-deferred)
+    (python-mode . (lambda () (fk/add-local-hook 'before-save-hook 'eglot-format-buffer)))
     (python-mode . eglot-ensure)
     ;; importmagic runs ~100mb ipython process per python file, and it does not
     ;; always find imports, 60%-70% maybe. I stop using this, but still want to keep.
@@ -2376,7 +2349,7 @@ Alert for multiple email accounts
 ** Enable Theme
 #+begin_src emacs-lisp
   ;; (load-theme 'doom-tokyo-night t)
-  (load-theme 'doom-dracula t)
+  (load-theme 'doom-tokyo-night t)
 #+end_src
 
 #+RESULTS:
@@ -2478,3 +2451,4 @@ Alert for multiple email accounts
        "modify it under the same terms as Perl itself." "\n\n"
        "=cut" "\n")))
 #+end_src
+
