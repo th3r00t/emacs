@@ -27,11 +27,21 @@ ag
 ** Early Init
 #+begin_src emacs-lisp
   (setq gc-cons-threshold (* 100 1024 1024)
-      read-process-output-max (* 1024 1024)
-      company-idle-delay 0.0
-      company-minimum-prefix-length 1
-      create-lockfiles nil) ;; lock files will kill `npm start'
+        read-process-output-max (* 1024 1024)
+        company-idle-delay 0.0
+        company-minimum-prefix-length 1
+        create-lockfiles nil) ;; lock files will kill `npm start'
+  (setq explicit-shell-file-name "zsh")
+  (setq shell-file-name "zsh")
+  (setq explicit-zsh-args '("--login" "--interactive"))
+  (defun zsh-shell-mode-setup ()
+    (setq-local comint-process-echoes t))
+  (add-hook 'shell-mode-hook #'zsh-shell-mode-setup)
 #+end_src
+
+#+RESULTS:
+| zsh-shell-mode-setup |
+
 ** 3. Evil Mode
 https://github.com/emacs-evil/evil-collection
 https://github.com/cofi/evil-leader
@@ -60,8 +70,8 @@ https://github.com/cofi/evil-leader
   (global-set-key (kbd "C-c b") 'org-iswitchb)
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "C-c c") 'org-capture)
-
   (add-hook 'org-mode-hook 'org-indent-mode)
+  (setq org-src-tab-acts-natively t)
 #+end_src
 *todo keywords*
 #+begin_src emacs-lisp
@@ -137,10 +147,6 @@ https://github.com/cofi/evil-leader
    '((python . t) (C . t) (shell . t) (sql . t) (emacs-lisp . t) (sqlite . t) (R . t) (lisp . t)))
   (add-to-list 'org-babel-tangle-lang-exts '("js" . "js"))
 #+end_src
-
-#+RESULTS:
-: ((lisp . lisp) (rustic . rs) (js . js) (D . d) (C++ . cpp) (python . py) (emacs-lisp . el) (elisp . el))
-
 *** Org-Roam
 https://www.orgroam.com/manual.html#Getting-Started
 **** install
@@ -757,7 +763,7 @@ https://github.com/cofi/evil-leader
     (setq dashboard-set-navigator t)
     (setq dashboard-set-init-info t)
     (setq dashboard-week-agenda t)
-    (setq dashboard-center-content t)
+    (setq dashboard-center-content nil)
     (setq dashboard-banner-logo-title "We Do Not Forgive\nWe Do Not Forget\nExpect Us.")
     (setq dashboard-startup-banner "~/.emacs.d/legion_transparent.png")
     ;; Value can be
@@ -849,7 +855,7 @@ https://github.com/cofi/evil-leader
     (persp-mode))
 #+end_src
 - Automatic perspective saving and loading
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle no
     (use-package persp-mode-projectile-bridge
       :after (persp-mode projectile)
       :config
@@ -916,7 +922,7 @@ https://www.emacswiki.org/emacs/TrampMode
 #+end_src
 *** SLIME
 #+begin_src emacs-lisp
-  (load (expand-file-name "~/.roswell/helper.el"))
+  ;; (load (expand-file-name "~/.roswell/helper.el"))
   (use-package slime :ensure t)
   (setq inferior-lisp-program "ros -Q run")
 #+end_src
@@ -985,10 +991,13 @@ https://magit.vc/
                                                        rspec-mode      python-mode
                                                        c-mode          c++-mode
                                                        objc-mode       latex-mode
-                                                       plain-tex-mode))
+                                                       plain-tex-mode  nix-mode))
                   (let ((mark-even-if-inactive transient-mark-mode))
                     (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
+
+#+RESULTS:
+
 #+begin_src emacs-lisp
   (use-package highlight-indent-guides :ensure t
     :hook((prog-mode . highlight-indent-guides-mode)))
@@ -1036,6 +1045,10 @@ https://magit.vc/
   (setq lsp-rust-analyzer-display-parameter-hints nil)
   (setq lsp-rust-analyzer-display-reborrow-hints nil)
 #+end_src
+
+#+RESULTS:
+: (standard-value (nil) custom-type hook custom-package-version (lsp-mode . 7.0.1) variable-documentation Hooks to run after `nix' server is run. custom-requests nil)
+
 *** DAP
 **** Install
 #+begin_src emacs-lisp
@@ -1101,6 +1114,10 @@ https://magit.vc/
 *** Flycheck
 #+begin_src emacs-lisp
   (use-package flycheck :ensure t :init (global-flycheck-mode t))
+  (setq flycheck-command-wrapper-function
+        (lambda (command) (apply 'nix-shell-command (nix-current-sandbox) command))
+        flycheck-executable-find
+        (lambda (cmd) (nix-executable-find (nix-current-sandbox) cmd)))
 #+end_src
 *** VDiff
 #+begin_src emacs-lisp
@@ -1207,6 +1224,7 @@ M-x lsp-restart-workspace
 NOTE: these hooks runs in reverse order
 #+begin_src emacs-lisp
   (use-package eglot :ensure t)
+  (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
   (use-package lsp-pyright
     :after lsp-mode
     :custom
@@ -1308,6 +1326,12 @@ NOTE: these hooks runs in reverse order
   ;; (setq rustic-lsp-client 'eglot)
   (setq rustic-analyzer-command '("~/.cargo/bin/rust-analyzer"))
 #+end_src
+*** Haskell
+- Nix dependant configuration to allow finding the correct env.
+#+begin_src emacs-lisp :tangle no
+  (setq haskell-process-wrapper-function
+        (lambda (args) (apply 'nix-shell-command (nix-current-sandbox) args)))
+#+end_src
 ** Completion System
 *** Pop-up
 #+begin_src emacs-lisp
@@ -1351,6 +1375,7 @@ https://company-mode.github.io/
   (define-key c++-mode-map  [(tab)] 'company-complete)
   (add-to-list 'company-backends 'company-c-headers)
   (add-to-list 'company-c-headers-path-system "/usr/include/c++/12.1.1/")
+  (add-to-list 'company-backends 'company-nixos-options)
 #+end_src
 *** Ivy
 #+begin_src emacs-lisp
@@ -1419,6 +1444,8 @@ https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
 #+end_src
 ***** Helm Gtags
 #+begin_src emacs-lisp
+  (use-package helm :ensure t)
+  (use-package helm-gtags :ensure t)
   (setq
    helm-gtags-ignore-case t
    helm-gtags-auto-update t
@@ -1484,13 +1511,14 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-c n I") 'org-roam-node-insert-immediate)
   (global-set-key (kbd "C-c n c") 'org-roam-capture)
   (global-set-key (kbd "C-c n C") 'org-capture)
+  (global-set-key (kbd "C-c C-S-n") 'helm-nixos-options)
   (global-set-key (kbd "C-c l") 'org-store-link)
   (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
   (global-set-key (kbd "C-c o") 'helm-occur)
   (global-set-key (kbd "C-;") '("Emacs Ops" . (keymap)))
   (global-set-key (kbd "C-; ;") 'exec2point)
   (global-set-key (kbd "C-; t") '("Toggles" . (keymap)))
-  (global-set-key (kbd "C-; t t") '("Vterm" . vterm))
+  ;; (global-set-key (kbd "C-; t t") '("Vterm" . vterm))
   (global-set-key (kbd "C-; t T") 'helm-top-in-frame)
   (global-set-key (kbd "C-; m") '("Media" . (keymap)))
   (global-set-key (kbd "C-; m p") 'emms-metaplaylist-mode-go)
@@ -1498,11 +1526,7 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-; m s") 'emms-stop)
   (global-set-key (kbd "C-; m S") 'emms-start)
   (global-set-key (kbd "C-; d") 'insert-date)
-  ;; (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  ;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  ;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  ;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-  ;; (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
+  (global-set-key (kbd "M-`") 'shell-pop)
   (global-set-key (kbd "M-[") 'insert-pair)
   (global-set-key (kbd "M-{") 'insert-pair)
   ;; (global-set-key (kbd "M-\"") 'insert-pair)
@@ -1525,7 +1549,7 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     "k k" '("Kill Ring" . helm-show-kill-ring)
     "t" '("Toggles" . (keymap))
     "t f" '("Toggle Neotree" . neotree-toggle)
-    "t t" '("Toggle Vterm" . vterm-toggle)
+    "t t" '("Toggle term" . shell-pop)
     "t T" '("Toggle Bar" . tool-bar-mode)
     "t M" '("Toggle Menu" . menu-bar-mode)
     "t s" '("Toggle Symbols" . lsp-treemacs-symbols)
@@ -1555,6 +1579,9 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     "T T" '("Helm Themes" . helm-themes)
     "d x w" 'delete-trailing-whitespace)
 #+end_src
+
+#+RESULTS:
+
 ** Help System
 *** DevDocs
 #+begin_src emacs-lisp
@@ -1583,18 +1610,18 @@ https://github.com/Wilfred/helpful
 ** Terminal
 *** libvterm
 https://github.com/akermu/emacs-libvterm
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package vterm
     :ensure t)
 #+end_src
 *** vterm-toggle
 https://github.com/kitnil/emacs-vterm-toggle
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package vterm-toggle
     :ensure t)
 #+end_src
 **** Show buffer in bottom side
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (setq vterm-toggle-fullscreen-p nil)
   (add-to-list 'display-buffer-alist
                '("^v?term.*"
@@ -1606,6 +1633,12 @@ https://github.com/kitnil/emacs-vterm-toggle
                  (reusable-frames . visible)
                  (window-height . 0.15)))
 #+end_src
+*** shell-pop-el
+#+begin_src emacs-lisp
+  (use-package shell-pop :ensure t)
+#+end_src
+
+#+RESULTS:
 
 ** MU4E
 #+begin_src emacs-lisp
@@ -1688,7 +1721,7 @@ https://github.com/kitnil/emacs-vterm-toggle
     )
 #+end_src
 Alert for multiple email accounts
-#+begin_src
+#+begin_src emacs-lisp
   (setq mu4e-alert-interesting-mail-query
     (concat
      "flag:unread maildir:/admin@mylt.dev/inbox "
@@ -1744,7 +1777,7 @@ Alert for multiple email accounts
   (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
 #+end_src
 *** Avoid trash on delete
-#+begin_src
+#+begin_src emacs-lisp
   (defun remove-nth-element (nth list)
   (if (zerop nth) (cdr list)
     (let ((last (nthcdr (1- nth) list)))
@@ -2198,6 +2231,11 @@ Alert for multiple email accounts
 #+RESULTS:
 : my-tab
 
+** Nixos
+#+begin_src emacs-lisp
+  (use-package nix-emacs :ensure t)
+#+end_src
+
 * Testing Configs
 #+begin_src emacs-lisp
   (use-package helm-system-packages :ensure t)
@@ -2268,7 +2306,7 @@ Alert for multiple email accounts
          "=cut" "\n")))
 #+end_src
 ** Python
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package pyenv-mode :ensure t)
   (pyenv-mode)
 #+end_src
@@ -2315,8 +2353,6 @@ Alert for multiple email accounts
 *** helm/functions
 **** helm/eselect-grep
 #+begin_src emacs-lisp
-  (use-package helm :ensure t)
-  (use-package helm-gtags :ensure t)
   (defun helm/eselect-grep ()
     (interactive)
     (when (y-or-n-p (format "Current grep program is %s, switching? "
