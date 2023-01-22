@@ -85,6 +85,13 @@
        (term shell-pop-term-shell))))
  '(shell-pop-universal-key "")
  '(shell-pop-window-position "top")
+ '(tab-bar-auto-width-max nil)
+ '(tab-bar-close-button-show 'selected)
+ '(tab-bar-format
+   '(tab-bar-format-menu-bar tab-bar-format-history tab-bar-format-tabs tab-bar-separator tab-bar-format-add-tab tab-bar-format-align-right))
+ '(tab-bar-new-tab-choice 'bookmark-bmenu-get-buffer)
+ '(tab-bar-position t)
+ '(tab-bar-tab-name-function 'tab-bar-tab-name-truncated)
  '(undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo-tree")))
  '(warning-suppress-log-types '((lsp-mode) (lsp-mode)))
  '(warning-suppress-types '((emacs) (use-package) (comp) (emacs) (lsp-mode)))
@@ -94,8 +101,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#1a1b26" :foreground "#a9b1d6" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 125 :width normal :foundry "CTDB" :family "FiraCode Nerd Font Mono"))))
- '(fixed-pitch ((t (:family "Fira Code Retina" :height 155))))
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#1a1b26" :foreground "#a9b1d6" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 170 :width normal :foundry "CTDB" :family "FiraCode Nerd Font Mono"))))
+ '(fixed-pitch ((t (:family "Fira Code Retina"))))
  '(org-block ((t (:inherit fixed-pitch))))
  '(org-code ((t (:inherit (shadow fixed-pitch)))))
  '(org-document-info ((t (:foreground "dark orange"))))
@@ -117,6 +124,9 @@
  '(org-table ((t (:inherit fixed-pitch :foreground "#83a598"))))
  '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 1.0))))
  '(org-verbatim ((t (:inherit (shadow fixed-pitch)))))
+ '(tab-bar ((t (:background "dark slate blue" :foreground "gray"))))
+ '(tab-bar-tab ((t (:background "#1a1b26" :foreground "cornflower blue" :height 1.3))))
+ '(tab-bar-tab-inactive ((t (:inherit tab-line-tab :background "#13141c" :foreground "dim gray" :box nil))))
  '(variable-pitch ((t (:family "ETBembo" :height 155 :weight thin)))))
 (provide 'init)
 ;;; init.el ends here

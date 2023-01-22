@@ -147,6 +147,13 @@ https://github.com/cofi/evil-leader
    '((python . t) (C . t) (shell . t) (sql . t) (emacs-lisp . t) (sqlite . t) (R . t) (lisp . t)))
   (add-to-list 'org-babel-tangle-lang-exts '("js" . "js"))
 #+end_src
+#+begin_src emacs-lisp
+  (use-package ox-gfm
+    :ensure t)
+#+end_src
+
+#+RESULTS:
+
 *** Org-Roam
 https://www.orgroam.com/manual.html#Getting-Started
 **** install
@@ -693,7 +700,12 @@ https://github.com/cofi/evil-leader
 ***** Install
 #+begin_src emacs-lisp
   (use-package spaceline :ensure t :config (require 'spaceline-config) :init (spaceline-spacemacs-theme))
+  (use-package eyebrowse :ensure t :config (eyebrowse-mode t))
 #+end_src
+
+#+RESULTS:
+: t
+
 ***** Configuration
 #+begin_src emacs-lisp
   (spaceline-compile
@@ -726,7 +738,7 @@ https://github.com/cofi/evil-leader
     '(which-function
       (python-pyvenv :fallback python-pyenv)
       (purpose :priority 94)
-      (battery :when active)
+      (battery)
       (selection-info :priority 95)
       input-method
       ((buffer-encoding-abbrev
@@ -736,14 +748,17 @@ https://github.com/cofi/evil-leader
        :priority 96)
       (global :when active)
       (buffer-position :priority 99)
-      (hud :priority 99)))
-#+end_src
-**** Fancy Battery
-#+begin_src emacs-lisp
-  (use-package fancy-battery :ensure t :init (add-hook 'after-init-hook #'fancy-battery-mode))
+      (hud :priority 99)
+      (date :priority 78)
+      (eyebrowse-mode :priority 78)
+      ))
 #+end_src
 
-#+RESULTS:
+**** Fancy Battery
+#+begin_src emacs-lisp
+  (use-package fancy-battery :ensure t)
+  (add-hook 'after-init-hook #'fancy-battery-mode)
+#+end_src
 
 *** Emacs Startup
 #+begin_src emacs-lisp
@@ -861,6 +876,23 @@ https://github.com/cofi/evil-leader
       :config
       (persp-mode-projectile-bridge-mode +1))
   #+end_src
+*** Dimmer
+#+begin_src emacs-lisp
+  (use-package dimmer
+    :ensure t
+    :config
+  (dimmer-configure-which-key)
+  (dimmer-configure-helm)
+        (dimmer-configure-magit)
+        (dimmer-configure-org)
+        (dimmer-configure-hydra)
+        (dimmer-configure-gnus)
+  (dimmer-mode t))
+#+end_src
+
+#+RESULTS:
+: t
+
 ** General Configurations
 *** Default Overrides
 **** yes-no
@@ -1114,10 +1146,6 @@ https://magit.vc/
 *** Flycheck
 #+begin_src emacs-lisp
   (use-package flycheck :ensure t :init (global-flycheck-mode t))
-  (setq flycheck-command-wrapper-function
-        (lambda (command) (apply 'nix-shell-command (nix-current-sandbox) command))
-        flycheck-executable-find
-        (lambda (cmd) (nix-executable-find (nix-current-sandbox) cmd)))
 #+end_src
 *** VDiff
 #+begin_src emacs-lisp
@@ -1590,8 +1618,9 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     (global-set-key (kbd "C-h C-l") '("Dev Docs"))
     (global-set-key (kbd "C-h C-l i") #'("Install Docs" . devdocs-install))
     (global-set-key (kbd "C-h C-l d") #'("Delete Docs" . devdocs-delete))
-    (global-set-key (kbd "C-h C-l d") #'("Update Docs" . devdocs-update-all))
+    (global-set-key (kbd "C-h C-l u") #'("Update Docs" . devdocs-update-all))
     (global-set-key (kbd "C-h C-l l") #'("Lookup Docs" . devdocs-lookup))
+    (global-set-key (kbd "C-h C-l p") #'("Peruse Docs" . devdocs-peruse))
     )
 #+end_src
 *** Helpfull
@@ -2310,6 +2339,11 @@ Alert for multiple email accounts
   (use-package pyenv-mode :ensure t)
   (pyenv-mode)
 #+end_src
+** 
+
+** 
+
+* 
 
 * Custom Functions
 *** Org goto project todo
@@ -2572,4 +2606,10 @@ Alert for multiple email accounts
     (setq web-mode-enable-comment-interpolation t)
     )
   (add-hook 'web-mode-hook  'my-web-mode-hook)
+#+end_src
+* Org Mode Hooks
+#+begin_src emacs-lisp
+  (eval-after-load "org"
+    '(require 'ox-gfm nil t))
+  
 #+end_src
