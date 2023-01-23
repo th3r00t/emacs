@@ -1023,7 +1023,7 @@ https://magit.vc/
                                                        rspec-mode      python-mode
                                                        c-mode          c++-mode
                                                        objc-mode       latex-mode
-                                                       plain-tex-mode  nix-mode))
+                                                       ))
                   (let ((mark-even-if-inactive transient-mark-mode))
                     (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
@@ -1292,7 +1292,6 @@ M-x lsp-restart-workspace
 NOTE: these hooks runs in reverse order
 #+begin_src emacs-lisp
   (use-package eglot :ensure t)
-  (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
   (use-package lsp-pyright
     :after lsp-mode
     :custom
@@ -1904,7 +1903,7 @@ Alert for multiple email accounts
 (run-with-timer 0 3540 'md4rd-refresh-login))
 
 ** Emacs Application Framework*** Install
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package eaf
     :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
     :custom
@@ -2387,14 +2386,6 @@ Configure ERC
     (define-key company-mode-map (kbd "TAB") 'my-tab)
     (define-key company-active-map (kbd "<tab>") 'my-tab)
     (define-key company-active-map (kbd "TAB") 'my-tab))
-#+end_src
-
-#+RESULTS:
-: my-tab
-
-** Nixos
-#+begin_src emacs-lisp
-  (use-package nix-emacs :ensure t)
 #+end_src
 
 * Testing Configs
