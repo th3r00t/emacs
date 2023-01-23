@@ -1163,7 +1163,27 @@ https://magit.vc/
 #+begin_src emacs-lisp
   (use-package yasnippet :ensure t :init (require 'yasnippet) :config (yas-global-mode 1))
   (use-package yasnippet-snippets :ensure t)
+  (defun yas-popup-isearch-prompt (prompt choices &optional display-fn)
+  (when (featurep 'popup)
+    (popup-menu*
+     (mapcar
+      (lambda (choice)
+        (popup-make-item
+         (or (and display-fn (funcall display-fn choice))
+             choice)
+         :value choice))
+      choices)
+     :prompt prompt
+     ;; start isearch mode immediately
+     :isearch t
+     )))
+
+(setq yas-prompt-functions '(yas-popup-isearch-prompt yas-maybe-ido-prompt yas-completing-prompt yas-no-prompt))
 #+end_src
+
+#+RESULTS:
+| yas-popup-isearch-prompt | yas-maybe-ido-prompt | yas-completing-prompt | yas-no-prompt |
+
 *** Doom Snippets
 #+begin_src emacs-lisp
   (use-package doom-snippets
@@ -1176,6 +1196,26 @@ https://magit.vc/
   (with-eval-after-load 'org
     (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 #+end_src
+*** Git Gutter
+#+begin_src emacs-lisp
+  (use-package git-gutter
+    :ensure t
+    :hook (prog-mode . git-gutter-mode)
+    :config
+    (global-git-gutter-mode +1)
+    (setq git-gutter:update-interval 0.02)
+    )
+  (use-package git-gutter-fringe
+    :ensure t)
+  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom)
+
+#+end_src
+
+#+RESULTS:
+: git-gutter-fr:deleted
+
 ** Development Plugins (Languages)
 *** Godot Script
 https://github.com/godotengine/emacs-gdscript-mode
@@ -1360,6 +1400,11 @@ NOTE: these hooks runs in reverse order
   (setq haskell-process-wrapper-function
         (lambda (args) (apply 'nix-shell-command (nix-current-sandbox) args)))
 #+end_src
+*** TinTIn
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/tintin-mode")
+  (require 'tintin-mode)
+#+end_src
 ** Completion System
 *** Pop-up
 #+begin_src emacs-lisp
@@ -1532,6 +1577,11 @@ https://github.com/justbur/emacs-which-key
 *** Bindings
 https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
 #+begin_src emacs-lisp
+  ;; Resize windows
+  (global-set-key (kbd "A-<down>") 'enlarge-window)
+  (global-set-key (kbd "A-<up>") 'shrink-window)
+  (global-set-key (kbd "A-<left>") 'enlarge-window-horizontally)
+  (global-set-key (kbd "A-<right>") 'shrink-window-horizontally)
   (global-set-key (kbd "C-c n") '("Org Roam" . (keymap)))
   (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
   (global-set-key (kbd "C-c n f") 'org-roam-node-find)
@@ -1554,10 +1604,14 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-; m s") 'emms-stop)
   (global-set-key (kbd "C-; m S") 'emms-start)
   (global-set-key (kbd "C-; d") 'insert-date)
-  (global-set-key (kbd "M-`") 'shell-pop)
-  (global-set-key (kbd "M-[") 'insert-pair)
-  (global-set-key (kbd "M-{") 'insert-pair)
-  ;; (global-set-key (kbd "M-\"") 'insert-pair)
+  (global-set-key (kbd "C-; e") '("ERC" . (keymap)))
+  (global-set-key (kbd "C-; e a") '("Select Active Buffer" . erc-track-switch-buffer))
+  (global-set-key (kbd "C-; e b") '("Select Buffer" . erc-switch-to-buffer))
+  (global-set-key (kbd "C-; e c") '("Connect" . (keymap)))
+  (global-set-key (kbd "C-; e c a") '("irc.anonops.com" . t3/irc/anon))
+  (global-set-key (kbd "C-; e c f") '("irc.freenode.net" . t3/irc/freenode))
+  ;; (global-set-key (kbd "M-`") 'shell-pop)
+  (global-set-key (kbd "M-`") 'vterm-toggle)
   (define-key yas-minor-mode-map (kbd "C-SPC") yas-maybe-expand)
   (evil-leader/set-key
     "b" '("Buffers" . (keymap))
@@ -1639,18 +1693,21 @@ https://github.com/Wilfred/helpful
 ** Terminal
 *** libvterm
 https://github.com/akermu/emacs-libvterm
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package vterm
     :ensure t)
 #+end_src
 *** vterm-toggle
 https://github.com/kitnil/emacs-vterm-toggle
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package vterm-toggle
     :ensure t)
 #+end_src
+
+#+RESULTS:
+
 **** Show buffer in bottom side
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (setq vterm-toggle-fullscreen-p nil)
   (add-to-list 'display-buffer-alist
                '("^v?term.*"
@@ -1662,6 +1719,7 @@ https://github.com/kitnil/emacs-vterm-toggle
                  (reusable-frames . visible)
                  (window-height . 0.15)))
 #+end_src
+
 *** shell-pop-el
 #+begin_src emacs-lisp
   (use-package shell-pop :ensure t)
@@ -2104,6 +2162,8 @@ Alert for multiple email accounts
   (use-package elcord :ensure t :init (require 'elcord)(elcord-mode))
 #+end_src
 ** Erc
+*** General
+Configure ERC
 #+begin_src emacs-lisp
   ;; Set our nickname & real-name as constant variables
   (setq
@@ -2111,18 +2171,15 @@ Alert for multiple email accounts
    erc-user-full-name "the master of /") ; Our /whois name
 
   ;; Define a function to connect to a server
-  (defun irc/freenode ()
-    (interactive)
-    (erc :server "irc.freenode.net"
-         :port   "6697"))
 
+  (defun t3/irc/anon ()
+    (interactive)
+    (erc-tls :server "irc.anonops.com":port "6697" :nick "lucidanonymity" :full-name "the master of /" :password "A!ec4597778"))
+  (defun t3/irc/freenode ()
+    (interactive)
+    (erc-tls :server "irc.freenode.net":port "6697" :nick "th3r00t" :full-name "the master of /" :password "b2edxfrr1"))
   ;; Or assign it to a keybinding
   ;; This example is also using erc's TLS capabilities:
-  (global-set-key "\C-cen"
-                  (lambda ()
-                    (interactive)
-                    (erc-tls :server "server2.example.com"
-                             :port   "6697")))
   (setq erc-prompt (lambda () (concat "[" (buffer-name) "]")))
   ;; allow some channels to not auto-delay messages. This can probably
   ;; get you kicked from some channels, so don't use it.
@@ -2162,12 +2219,12 @@ Alert for multiple email accounts
     (when (string-match "^\\s-*\\(.*\\)$" line)
       (let ((reason (match-string 1 line)))
         (setq erc-away-reason reason))))
-        ;;; Frame-related function from rcircDbusNotification
+          ;;; Frame-related function from rcircDbusNotification
 
   (defun fsm-x-active-window ()
     "Return the window ID of the current active window in X, as
-    given by the _NET_ACTIVE_WINDOW of the root window set by the
-    window-manager, or nil if not able to"
+      given by the _NET_ACTIVE_WINDOW of the root window set by the
+      window-manager, or nil if not able to"
     (if (eq (window-system) 'x)
         (let ((x-active-window (x-window-property "_NET_ACTIVE_WINDOW" nil "WINDOW" 0 nil t)))
           (string-to-number (format "%x00%x" (car x-active-window) (cdr x-active-window))
@@ -2184,7 +2241,7 @@ Alert for multiple email accounts
 
   (defun fsm-frame-x-active-window-p (frame)
     "Check if FRAME is is the X active windows
-    Returns t if frame has focus or nil if"
+      Returns t if frame has focus or nil if"
     (if (framep frame)
         (progn
           (if (eq (fsm-frame-outer-window-id frame)
@@ -2218,7 +2275,82 @@ Alert for multiple email accounts
 
 
   (provide 'ivy-erc)
+  (use-package erc-hl-nicks :ensure t)
 #+end_src
+
+#+RESULTS:
+
+*** ERC Auto Joins
+#+begin_src emacs-lisp
+  (require 'erc-join)
+  (erc-autojoin-mode 1)
+  (setq erc-autojoin-channels-alist
+        '(("freenode.net" "#emacs" "#archlinux" "#python" "#linux" "#selfhosted")
+          ("anonops.com" "#python" "#linux" "#anonops" "#bots" "#networking" "#programmers" "#OpSec" "#hackers" "#blackhats" "#radioanonops")))
+  
+#+end_src
+*** ERC Logging
+#+begin_src emacs-lisp
+  (setq erc-log-channels-directory "~/.emacs.d/.erc/logs/")
+  (setq erc-save-buffer-on-part t)
+  (setq erc-log-write-after-send t)
+  (setq erc-log-write-after-insert t)
+  (setq erc-log-matches-types-alist
+        '((current-nick . "YOUR_NICK")
+          (keyword . "KEYWORD")
+          (channel . "JOIN/PART/QUIT")
+          (nick . "NICK CHANGE")
+          (mode . "MODE changes")
+          (ctcp . "CTCP queries")
+          (notice . "NOTICE messages")
+          (kill . "KILL messages")
+          (other . "MISC messages")))
+  (setq erc-log-matches t)
+  (setq erc-log-insert-log-on-open t)
+  (setq erc-log-file-coding-system 'utf-8)
+  (setq erc-log-file-coding-system 'utf-8)
+  (setq erc-log-write-after-send t)
+  (setq erc-log-write-after-insert t)
+  (setq erc-log-matches-types-alist
+        '((current-nick . "YOUR_NICK")
+          (keyword . "KEYWORD")
+          (channel . "JOIN/PART/QUIT")
+          (nick . "NICK CHANGE")
+          (mode . "MODE changes")
+          (ctcp . "CTCP queries")
+          (notice . "NOTICE messages")
+          (kill . "KILL messages")
+          (other . "MISC messages")))
+  (setq erc-log-matches t)
+  (setq erc-log-insert-log-on-open t)
+  (setq erc-log-file-coding-system 'utf-8)
+
+  (defun t3/erc-log-matches (match-type nick message)
+    "Log matches to a file."
+    (let ((erc-log-channels-directory "~/.emacs.d/.erc/logs/"))
+      (erc-log-matches match-type nick message)))
+  (add-hook 'erc-text-matched-hook 't3/erc-log-matches)
+#+end_src
+
+*** ERC Session Management
+#+begin_src emacs-lisp
+  (setq erc-max-buffer-size 20000)
+  (defvar erc-insert-post-hook)
+  (add-hook 'erc-insert-post-hook 'erc-truncate-buffer)
+  (setq erc-truncate-buffer-on-save t)
+
+
+  ;; Clears out annoying erc-track-mode stuff for when we don't care.
+  ;; Useful for when ChanServ restarts :P
+  (defun reset-erc-track-mode ()
+    (interactive)
+    (setq erc-modified-channels-alist nil)
+    (erc-modified-channels-update))
+#+end_src
+
+#+RESULTS:
+: reset-erc-track-mode
+
 ** Enable Theme
 #+begin_src emacs-lisp
   ;; (load-theme 'doom-tokyo-night t)
@@ -2613,3 +2745,4 @@ Alert for multiple email accounts
     '(require 'ox-gfm nil t))
   
 #+end_src
+

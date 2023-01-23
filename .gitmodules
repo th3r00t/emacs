@@ -1,0 +1,3 @@
+[submodule "tintin-mode"]
+	path = tintin-mode
+	url = https://github.com/matthewrsilver/tintin-mode

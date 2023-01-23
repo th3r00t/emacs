@@ -59,6 +59,8 @@
  '(display-battery-mode t)
  '(display-line-numbers-type t)
  '(elcord-client-id "1050866692621877279")
+ '(elcord-quiet t)
+ '(elcord-use-major-mode-as-main-icon t)
  '(evil-undo-system 'undo-tree)
  '(global-display-line-numbers-mode nil)
  '(helm-M-x-always-save-history t)
@@ -101,8 +103,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#1a1b26" :foreground "#a9b1d6" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 170 :width normal :foundry "CTDB" :family "FiraCode Nerd Font Mono"))))
- '(fixed-pitch ((t (:family "Fira Code Retina"))))
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#1a1b26" :foreground "#a9b1d6" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 190 :width normal :foundry "CTDB" :family "Fira Code Nerd Font Mono"))))
+ '(fixed-pitch ((t (:family "Fira Code Retina" :height 155))))
  '(org-block ((t (:inherit fixed-pitch))))
  '(org-code ((t (:inherit (shadow fixed-pitch)))))
  '(org-document-info ((t (:foreground "dark orange"))))

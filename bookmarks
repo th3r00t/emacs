@@ -1,0 +1,17 @@
+;;;; Emacs Bookmark Format Version 1;;;; -*- coding: utf-8-emacs; mode: lisp-data -*-
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("config.org"
+ (filename . "~/.emacs.d/config.org")
+ (front-context-string . "#+TITLE: Emacs D")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 25549 42197 148138 942000))
+("org-capture-last-stored"
+ (filename . "~/org/.org-roam/20230121144948-sesocial_relay.org")
+ (front-context-string . "* Space Engineer")
+ (rear-context-string . "oject sesocial\n\n")
+ (position . 174)
+ (last-modified 25548 18145 976968 862000))
+)
