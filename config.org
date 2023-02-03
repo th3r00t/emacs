@@ -39,7 +39,6 @@ ag
   (add-hook 'shell-mode-hook #'zsh-shell-mode-setup)
 #+end_src
 
-#+RESULTS:
 | zsh-shell-mode-setup |
 
 ** 3. Evil Mode
@@ -152,7 +151,6 @@ https://github.com/cofi/evil-leader
     :ensure t)
 #+end_src
 
-#+RESULTS:
 
 *** Org-Roam
 https://www.orgroam.com/manual.html#Getting-Started
@@ -209,7 +207,6 @@ https://www.orgroam.com/manual.html#Getting-Started
           org-roam-ui-open-on-start t))
 #+end_src
 
-#+RESULTS:
 : t
 
 *** Hydra
@@ -373,7 +370,6 @@ https://www.orgroam.com/manual.html#Getting-Started
           ))
 #+end_src
 
-#+RESULTS:
 | d | default | plain | %? | :if-new | (file+head %<%Y%m%d%H%M%S>-${slug}.org #+title: ${title} |
 
 ***** Future Capture
@@ -387,7 +383,6 @@ https://www.orgroam.com/manual.html#Getting-Started
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src
 
-#+RESULTS:
 | (lambda nil (org-bullets-mode 1)) | org-indent-mode | evil-collection-mu4e-org-set-header-to-normal-mode | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | #<subr F616e6f6e796d6f75732d6c616d626461_anonymous_lambda_4> | (lambda nil evil-org-mode) | (lambda nil (evil-org-mode)) | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes |
 *** Org-Roam w\ Agenda
 #+begin_src emacs-lisp
@@ -541,7 +536,6 @@ https://www.orgroam.com/manual.html#Getting-Started
         (replace-match ""))))
 #+end_src
 
-#+RESULTS:
 : vulpea-buffer-prop-remove
 
 *** Calendar With Org
@@ -569,7 +563,6 @@ https://www.orgroam.com/manual.html#Getting-Started
       )))
 #+end_src
 
-#+RESULTS:
 : my-open-calendar
 *** Org-Roam-Timestamps
 #+begin_src emacs-lisp
@@ -703,7 +696,6 @@ https://github.com/cofi/evil-leader
   (use-package eyebrowse :ensure t :config (eyebrowse-mode t))
 #+end_src
 
-#+RESULTS:
 : t
 
 ***** Configuration
@@ -890,7 +882,6 @@ https://github.com/cofi/evil-leader
   (dimmer-mode t))
 #+end_src
 
-#+RESULTS:
 : t
 *** Transparency
 #+begin_src emacs-lisp :tangle no
@@ -899,7 +890,6 @@ https://github.com/cofi/evil-leader
   (set-frame-parameter nil 'alpha nil)
 #+end_src
 
-#+RESULTS:
 
 ** General Configurations
 *** Default Overrides
@@ -950,7 +940,6 @@ https://www.emacswiki.org/emacs/TrampMode
   (global-undo-tree-mode)
 #+end_src
 
-#+RESULTS:
 
 *** Multiple Cursors
 #+begin_src emacs-lisp
@@ -967,9 +956,12 @@ https://www.emacswiki.org/emacs/TrampMode
   (setq inferior-lisp-program "ros -Q run")
 #+end_src
 
-#+RESULTS:
 : sbcl
-
+*** Tabs Size
+#+begin_src emacs-lisp
+  (setq-default tab-width 4)
+  (setq-default indent-tabs-mode nil)
+#+end_src
 ** Registers
 #+begin_src emacs-lisp
   (set-register ?e (cons 'file "~/.emacs.d/"))
@@ -1036,7 +1028,6 @@ https://magit.vc/
                     (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
 
-#+RESULTS:
 
 #+begin_src emacs-lisp
   (use-package highlight-indent-guides :ensure t
@@ -1086,7 +1077,6 @@ https://magit.vc/
   (setq lsp-rust-analyzer-display-reborrow-hints nil)
 #+end_src
 
-#+RESULTS:
 : (standard-value (nil) custom-type hook custom-package-version (lsp-mode . 7.0.1) variable-documentation Hooks to run after `nix' server is run. custom-requests nil)
 
 *** DAP
@@ -1160,7 +1150,6 @@ https://magit.vc/
   (use-package vdiff :ensure t :config (require 'vdiff) (define-key vdiff-mode-map (kbd "C-x") vdiff-mode-prefix-map))
 #+end_src
 
-#+RESULTS:
 : t
 
 *** Xml
@@ -1189,7 +1178,6 @@ https://magit.vc/
 (setq yas-prompt-functions '(yas-popup-isearch-prompt yas-maybe-ido-prompt yas-completing-prompt yas-no-prompt))
 #+end_src
 
-#+RESULTS:
 | yas-popup-isearch-prompt | yas-maybe-ido-prompt | yas-completing-prompt | yas-no-prompt |
 
 *** Doom Snippets
@@ -1221,7 +1209,6 @@ https://magit.vc/
 
 #+end_src
 
-#+RESULTS:
 : git-gutter-fr:deleted
 
 ** Development Plugins (Languages)
@@ -1352,7 +1339,6 @@ NOTE: these hooks runs in reverse order
 
 #+end_src
 
-#+RESULTS:
 *** Web-mode
 #+begin_src emacs-lisp
   (use-package web-mode :ensure t)
@@ -1562,7 +1548,6 @@ https://github.com/emacsorphanage/helm-ag
   (use-package sr-speedbar :ensure t)
 #+end_src
 
-#+RESULTS:
 ** Key Bindings
 *** Which Key
 https://github.com/justbur/emacs-which-key
@@ -1669,7 +1654,6 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     "d x w" 'delete-trailing-whitespace)
 #+end_src
 
-#+RESULTS:
 
 ** Help System
 *** DevDocs
@@ -1711,7 +1695,6 @@ https://github.com/kitnil/emacs-vterm-toggle
     :ensure t)
 #+end_src
 
-#+RESULTS:
 
 **** Show buffer in bottom side
 #+begin_src emacs-lisp
@@ -1732,7 +1715,6 @@ https://github.com/kitnil/emacs-vterm-toggle
   (use-package shell-pop :ensure t)
 #+end_src
 
-#+RESULTS:
 
 ** MU4E
 #+begin_src emacs-lisp
@@ -1927,7 +1909,6 @@ Alert for multiple email accounts
     (eaf-bind-key nil "M-q" eaf-browser-keybinding)) ;; unbind, see more in the Wiki
 #+end_src
 
-#+RESULTS:
 : t
 
 *** Configuration
@@ -2285,7 +2266,6 @@ Configure ERC
   (use-package erc-hl-nicks :ensure t)
 #+end_src
 
-#+RESULTS:
 
 *** ERC Auto Joins
 #+begin_src emacs-lisp
@@ -2355,7 +2335,6 @@ Configure ERC
     (erc-modified-channels-update))
 #+end_src
 
-#+RESULTS:
 : reset-erc-track-mode
 
 ** Enable Theme
@@ -2364,7 +2343,6 @@ Configure ERC
   (load-theme 'doom-tokyo-night t)
 #+end_src
 
-#+RESULTS:
 : t
 
 ** Copilot
