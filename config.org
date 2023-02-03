@@ -590,7 +590,7 @@ Configuration settings that adjust the user experience
 #+begin_src emacs-lisp
   (tooltip-mode 1)
   (tool-bar-mode -1)
-  (menu-bar-mode -1)
+  (menu-bar-mode 1)
   (scroll-bar-mode -1)
 #+end_src
 *** Line Numebers
@@ -892,6 +892,14 @@ https://github.com/cofi/evil-leader
 
 #+RESULTS:
 : t
+*** Transparency
+#+begin_src emacs-lisp :tangle no
+  (set-frame-parameter (selected-frame) 'alpha '(85 . 75))
+  (add-to-list 'default-frame-alist '(alpha . (85 . 75)))
+  (set-frame-parameter nil 'alpha nil)
+#+end_src
+
+#+RESULTS:
 
 ** General Configurations
 *** Default Overrides
@@ -1004,10 +1012,10 @@ https://magit.vc/
   ;; Ignoring electric indentation
   (defun electric-indent-ignore-python (char)
     "Ignore electric indentation for python-mode"
-    (if (equal major-mode 'python-mode)
-        'no-indent
-      nil))
-  (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
+    ;; (if (equal major-mode 'python-mode)
+    ;;     'no-indent
+    ;;   nil))
+    ;; (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
 
   ;; Enter key executes newline-and-indent
   (defun set-newline-and-indent ()
@@ -1303,11 +1311,11 @@ NOTE: these hooks runs in reverse order
     :straight (:type built-in)
     :init
     (add-to-list 'all-the-icons-icon-alist
-                 '("\\.py$" all-the-icons-alltheicon "python" :height 1.1 :face all-the-icons-dblue))
+                 '("\\.py$" all-the-icons-alltheicon "python" :height 1 :face all-the-icons-dblue))
     :custom
     (python-shell-interpreter "ipython")
     (python-shell-interpreter-args "-i --simple-prompt")
-    (python-indent-guess-indent-offset-verbose nil)
+    (python-indent-guess-indent-offset-verbose t)
     :bind
     ( :map python-mode-map
       ("C-c r" . python-indent-shift-right)
