@@ -86,7 +86,7 @@ https://github.com/cofi/evil-leader
   (custom-theme-set-faces
    'user
    '(org-block ((t (:inherit fixed-pitch))))
-   '(org-code ((t (:inherit (shadow fixed-pitch)))))
+   '(org-code ((t (:inherit (shadow fixed-pitch) :weight bold))))
    '(org-document-info ((t (:foreground "dark orange"))))
    '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
    '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
@@ -133,8 +133,8 @@ https://github.com/cofi/evil-leader
   ;;    `(org-document-title ((t (,@headline ,@variable-tuple :height 1.6 :underline nil))))))
   (custom-theme-set-faces
    'user
-   '(variable-pitch ((t (:family "ETBembo" :height 155 :weight thin))))
-   '(fixed-pitch ((t ( :family "Fira Code Retina" :height 155)))))
+   '(variable-pitch ((t (:family "ETBembo" :height 100 :weight thin))))
+   '(fixed-pitch ((t ( :family "Fira Code Retina" :height 100)))))
   (add-hook 'org-mode-hook 'variable-pitch-mode)
   (add-hook 'org-mode-hook 'visual-line-mode)
 #+end_src
@@ -386,9 +386,6 @@ https://www.orgroam.com/manual.html#Getting-Started
   (require 'org-bullets)
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src
-
-#+RESULTS:
-| (lambda nil (org-bullets-mode 1)) | org-indent-mode | evil-collection-mu4e-org-set-header-to-normal-mode | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | #<subr F616e6f6e796d6f75732d6c616d626461_anonymous_lambda_4> | (lambda nil evil-org-mode) | (lambda nil (evil-org-mode)) | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes |
 *** Org-Roam w\ Agenda
 #+begin_src emacs-lisp
   (defun vulpea-project-p ()
@@ -590,13 +587,21 @@ Configuration settings that adjust the user experience
 #+begin_src emacs-lisp
   (tooltip-mode 1)
   (tool-bar-mode -1)
-  (menu-bar-mode -1)
+  (menu-bar-mode 1)
   (scroll-bar-mode -1)
 #+end_src
-*** Line Numebers
-#+begin_src emacs-lisp
-  (global-display-line-numbers-mode)
+*** TODO Window Resize
+#+begin_src emacs-lisp :tangle no
+  (setq window-resize-pixelwise t)
+  (global-set-key (kbd "A-j") 'enlarge-window)
+  (global-set-key (kbd "A-k") 'shrink-window)
+  (global-set-key (kbd "A-h") 'enlarge-window-horizontally)
+  (global-set-key (kbd "A-l") 'shrink-window-horizontally)
 #+end_src
+
+#+RESULTS:
+: shrink-window-horizontally
+
 *** Highlight Line
 #+begin_src emacs-lisp
   (global-hl-line-mode 1)
@@ -702,10 +707,6 @@ https://github.com/cofi/evil-leader
   (use-package spaceline :ensure t :config (require 'spaceline-config) :init (spaceline-spacemacs-theme))
   (use-package eyebrowse :ensure t :config (eyebrowse-mode t))
 #+end_src
-
-#+RESULTS:
-: t
-
 ***** Configuration
 #+begin_src emacs-lisp
   (spaceline-compile
@@ -765,7 +766,6 @@ https://github.com/cofi/evil-leader
   (use-package dashboard
     :ensure t
     :config
-    ;; (linum-mode -1)
     (dashboard-setup-startup-hook)
     (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
     (setq dashboard-items '((recents  . 5)
@@ -1002,12 +1002,12 @@ https://magit.vc/
   ;;; Indentation for python
 
   ;; Ignoring electric indentation
-  (defun electric-indent-ignore-python (char)
-    "Ignore electric indentation for python-mode"
-    (if (equal major-mode 'python-mode)
-        'no-indent
-      nil))
-  (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
+  ;; (defun electric-indent-ignore-python (char)
+  ;;   "Ignore electric indentation for python-mode"
+  ;;   (if (equal major-mode 'python-mode)
+  ;;       'no-indent
+  ;;     nil))
+  ;; (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
 
   ;; Enter key executes newline-and-indent
   (defun set-newline-and-indent ()
@@ -1023,7 +1023,7 @@ https://magit.vc/
                                                        rspec-mode      python-mode
                                                        c-mode          c++-mode
                                                        objc-mode       latex-mode
-                                                       plain-tex-mode  nix-mode))
+                                                       plain-tex-mode  ))
                   (let ((mark-even-if-inactive transient-mark-mode))
                     (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
@@ -1077,10 +1077,6 @@ https://magit.vc/
   (setq lsp-rust-analyzer-display-parameter-hints nil)
   (setq lsp-rust-analyzer-display-reborrow-hints nil)
 #+end_src
-
-#+RESULTS:
-: (standard-value (nil) custom-type hook custom-package-version (lsp-mode . 7.0.1) variable-documentation Hooks to run after `nix' server is run. custom-requests nil)
-
 *** DAP
 **** Install
 #+begin_src emacs-lisp
@@ -1089,6 +1085,7 @@ https://magit.vc/
 #+end_src
 **** Configuration
 #+begin_src emacs-lisp
+  
   (use-package dap-mode
     :after lsp-mode
     :commands dap-debug
@@ -1114,11 +1111,27 @@ https://magit.vc/
                                        :console "external"
                                        :dap-compilation "cargo build"
                                        :dap-compilation-dir "${workspaceFolder}")))
+    (dap-register-debug-template "Rust::Bog"
+                                 (list :type "cppdbg"
+                                       :request "launch"
+                                       :name "Rust::Bog"
+                                       :MIMode "gdb"
+                                       :miDebuggerPath "rust-gdb"
+                                       :environment []
+                                       :program "/home/th3r00t/.local/builds/bog/target/debug/bog"
+                                       :cwd "/home/th3r00t/.local/builds/bog"
+                                       :console "external"
+                                       :dap-compilation "cargo build"
+                                       :dap-compilation-dir "/home/th3r00t/.local/builds/bog"))
+
 
   (with-eval-after-load 'dap-mode
     (setq dap-default-terminal-kind "integrated") ;; Make sure that terminal programs open a term for I/O in an Emacs buffer
     (dap-auto-configure-mode +1))
 #+end_src
+
+#+RESULTS:
+: t
 
 #+begin_src emacs-lisp
   (dap-mode 1)
@@ -1145,7 +1158,7 @@ https://magit.vc/
 #+end_src
 *** Flycheck
 #+begin_src emacs-lisp
-  (use-package flycheck :ensure t :init (global-flycheck-mode t))
+  (use-package flycheck :ensure t :init (global-flycheck-mode nil))
 #+end_src
 *** VDiff
 #+begin_src emacs-lisp
@@ -1292,7 +1305,6 @@ M-x lsp-restart-workspace
 NOTE: these hooks runs in reverse order
 #+begin_src emacs-lisp
   (use-package eglot :ensure t)
-  (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
   (use-package lsp-pyright
     :after lsp-mode
     :custom
@@ -1303,7 +1315,7 @@ NOTE: these hooks runs in reverse order
     :straight (:type built-in)
     :init
     (add-to-list 'all-the-icons-icon-alist
-                 '("\\.py$" all-the-icons-alltheicon "python" :height 1.1 :face all-the-icons-dblue))
+                 '("\\.py$" all-the-icons-alltheicon "python" :height 1.0 :face all-the-icons-dblue))
     :custom
     (python-shell-interpreter "ipython")
     (python-shell-interpreter-args "-i --simple-prompt")
@@ -1394,13 +1406,7 @@ NOTE: these hooks runs in reverse order
   ;; (setq rustic-lsp-client 'eglot)
   (setq rustic-analyzer-command '("~/.cargo/bin/rust-analyzer"))
 #+end_src
-*** Haskell
-- Nix dependant configuration to allow finding the correct env.
-#+begin_src emacs-lisp :tangle no
-  (setq haskell-process-wrapper-function
-        (lambda (args) (apply 'nix-shell-command (nix-current-sandbox) args)))
-#+end_src
-*** TinTIn
+*** TODO TinTIn
 #+begin_src emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/tintin-mode")
   (require 'tintin-mode)
@@ -1448,7 +1454,6 @@ https://company-mode.github.io/
   (define-key c++-mode-map  [(tab)] 'company-complete)
   (add-to-list 'company-backends 'company-c-headers)
   (add-to-list 'company-c-headers-path-system "/usr/include/c++/12.1.1/")
-  (add-to-list 'company-backends 'company-nixos-options)
 #+end_src
 *** Ivy
 #+begin_src emacs-lisp
@@ -1574,7 +1579,7 @@ https://github.com/justbur/emacs-which-key
   (fset 'exec2point
         (kmacro-lambda-form [?\C-u ?\M-! ?\C-x ?q return] 0 "%d"))
 #+end_src
-*** Bindings
+*** FEEDBACK Bindings
 https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
 #+begin_src emacs-lisp
   ;; Resize windows
@@ -1589,7 +1594,6 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-c n I") 'org-roam-node-insert-immediate)
   (global-set-key (kbd "C-c n c") 'org-roam-capture)
   (global-set-key (kbd "C-c n C") 'org-capture)
-  (global-set-key (kbd "C-c C-S-n") 'helm-nixos-options)
   (global-set-key (kbd "C-c l") 'org-store-link)
   (global-set-key (kbd "C-c n j") 'org-journal-new-entry)
   (global-set-key (kbd "C-c o") 'helm-occur)
@@ -1728,11 +1732,13 @@ https://github.com/kitnil/emacs-vterm-toggle
 #+RESULTS:
 
 ** MU4E
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (require 'mu4e)
+  (mu4e :variables
+      mu4e-installation-path "/usr/share/emacs/site-lisp/")
 #+end_src
 *** Multiple Account Configuration
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   ;; assumed Maildir layout
   ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
   ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
@@ -1770,7 +1776,7 @@ https://github.com/kitnil/emacs-vterm-toggle
             )))
 #+end_src
 *** mbsync integration
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (setq mu4e-get-mail-command "mbsync -a")
   ;; Most of the time, I merely want mu4e to re-index my local maildir (because
   ;; I'm running mbsync as a cron job). However, sometimes I want to fetch mails
@@ -1789,7 +1795,7 @@ https://github.com/kitnil/emacs-vterm-toggle
 #+end_src
 
 *** mu4e-alert
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package mu4e-alert
     :ensure t
     :after mu4e
@@ -1808,7 +1814,7 @@ https://github.com/kitnil/emacs-vterm-toggle
     )
 #+end_src
 Alert for multiple email accounts
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (setq mu4e-alert-interesting-mail-query
     (concat
      "flag:unread maildir:/admin@mylt.dev/inbox "
@@ -1817,7 +1823,7 @@ Alert for multiple email accounts
      ))
 #+end_src
 *** sending mail
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   ;; I have my "default" parameters from Gmail
   (setq mu4e-sent-folder "/home/th3r00t/.local/share/mail/admin/Sent"
         ;; mu4e-sent-messages-behavior 'delete ;; Unsure how this should be configured
@@ -1864,7 +1870,7 @@ Alert for multiple email accounts
   (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
 #+end_src
 *** Avoid trash on delete
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (defun remove-nth-element (nth list)
   (if (zerop nth) (cdr list)
     (let ((last (nthcdr (1- nth) list)))
@@ -1881,7 +1887,7 @@ Alert for multiple email accounts
                     (mu4e~mark-check-target target) "-N"))))
 #+end_src
 *** Random Tweaks
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   ;; This allows me to use 'helm' to select mailboxes
   (setq mu4e-completing-read-function 'completing-read)
   ;; Why would I want to leave my message open after I've sent it?
@@ -1914,17 +1920,26 @@ Alert for multiple email accounts
     (browse-url-browser-function 'eaf-open-browser)
     :config
     (defalias 'browse-web #'eaf-open-browser)
-    (eaf-bind-key scroll_up "C-n" eaf-pdf-viewer-keybinding)
-    (eaf-bind-key scroll_down "C-p" eaf-pdf-viewer-keybinding)
-    (eaf-bind-key take_photo "p" eaf-camera-keybinding)
-    (eaf-bind-key nil "M-q" eaf-browser-keybinding)) ;; unbind, see more in the Wiki
+
+    ) ;; unbind, see more in the Wiki
 #+end_src
-
-#+RESULTS:
-: t
-
 *** Configuration
-(require 'eaf-browser)
+#+begin_src emacs-lisp
+  (require 'eaf-browser)
+  (require 'eaf-pdf-viewer)
+  (require 'eaf-org-previewer)
+  (require 'eaf-mindmap)
+  (require 'eaf-file-manager)
+  (require 'eaf-camera)
+  (require 'eaf-video-player)
+  (require 'eaf-markdown-previewer)
+  (require 'eaf-terminal)
+  (require 'eaf-netease-cloud-music)
+  (require 'eaf-jupyter)
+  (require 'eaf-vue-demo)
+  (require 'eaf-airshare)
+  (require 'eaf-music-player)
+#+end_src
 ** Music
 *** EMMS
 **** install
@@ -2157,6 +2172,11 @@ Alert for multiple email accounts
   (use-package w3m :ensure t)
   (use-package helm-w3m :ensure t)
 #+end_src
+*** Set Default Browser
+#+begin_src emacs-lisp :tangle no
+  (setq browse-url-browser-function 'browse-url-generic
+        browse-url-generic-program "qutebrowser")
+#+end_src
 ** Discord
 #+begin_src emacs-lisp
   (use-package elcord :ensure t :init (require 'elcord)(elcord-mode))
@@ -2354,13 +2374,14 @@ Configure ERC
 ** Enable Theme
 #+begin_src emacs-lisp
   ;; (load-theme 'doom-tokyo-night t)
-  (load-theme 'doom-tokyo-night t)
+  (load-theme 'doom-nord t)
 #+end_src
 
 #+RESULTS:
 : t
 
 ** Copilot
+Githubs pair programing ai
 #+begin_src emacs-lisp
   (use-package copilot
     :straight (:host github :repo "zerolfx/copilot.el"
@@ -2392,10 +2413,13 @@ Configure ERC
 #+RESULTS:
 : my-tab
 
-** Nixos
+** helm-ag
 #+begin_src emacs-lisp
-  (use-package nix-emacs :ensure t)
+  (use-package helm-ag
+    :ensure t)
 #+end_src
+
+#+RESULTS:
 
 * Testing Configs
 #+begin_src emacs-lisp
@@ -2474,8 +2498,6 @@ Configure ERC
 ** 
 
 ** 
-
-* 
 
 * Custom Functions
 *** Org goto project todo
@@ -2739,10 +2761,42 @@ Configure ERC
     )
   (add-hook 'web-mode-hook  'my-web-mode-hook)
 #+end_src
-* Org Mode Hooks
+* Hooks
+** Linum Hook
 #+begin_src emacs-lisp
-  (eval-after-load "org"
-    '(require 'ox-gfm nil t))
-  
+  (defun t3/linum-hook ()
+    (linum-mode 1))
+  (add-hook 'prog-mode-hook 't3/linum-hook)
+#+end_src
+** LSP Mode Hooks
+#+begin_src emacs-lisp
+  (defun t3/lsp-mode-hook ()
+    (setq lsp-enable-indentation t)
+    (setq lsp-enable-on-type-formatting t)
+    (setq lsp-enable-symbol-highlighting t)
+    (setq lsp-enable-folding t)
+    (setq lsp-enable-file-watchers t)
+    (setq lsp-enable-links t)
+    (setq lsp-enable-snippet t)
+    (setq lsp-enable-text-document-color t)
+    (setq lsp-enable-semantic-highlighting t)
+    (setq lsp-enable-imenu t)
+    (setq lsp-enable-completion-at-point t)
+    (setq lsp-enable-xref t)
+    (setq lsp-enable-signature-help t)
+    (setq lsp-enable-dap-auto-configure t)
+    (setq lsp-rust-server 'rust-analyzer)
+    (setq lsp-ui-doc-delay 0.6)
+    (setq lsp-ui-doc-header t)
+    (setq lsp-ui-doc-include-signature t)
+    (setq lsp-ui-doc-position 'top)
+    (setq lsp-ui-doc-use-childframe t)
+    (setq lsp-ui-doc-use-webkit nil)
+    )
+  (add-hook 'lsp-mode-hook 't3/lsp-mode-hook)
+#+end_src
+** Org Mode Hooks
+#+begin_src emacs-lisp
+  (eval-after-load "org" '(require 'ox-gfm nil t))
 #+end_src
 
