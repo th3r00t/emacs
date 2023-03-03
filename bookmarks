@@ -9,9 +9,8 @@
  (position . 1)
  (last-modified 25549 42197 148138 942000))
 ("org-capture-last-stored"
- (filename . "~/org/.org-roam/20230121144948-sesocial_relay.org")
- (front-context-string . "* Space Engineer")
- (rear-context-string . "oject sesocial\n\n")
- (position . 174)
- (last-modified 25548 18145 976968 862000))
+ (filename . "~/org/.org-roam/20230222220406-reef.org")
+ (front-context-string . "* Description\nSi")
+ (rear-context-string . "letags: project\n")
+ (position . 102))
 )

@@ -1,3 +1,7 @@
 [submodule "tintin-mode"]
 	path = tintin-mode
 	url = https://github.com/matthewrsilver/tintin-mode
+[submodule "/home/th3r00t/.emacs.d/site-lisp/emacs-application-framework"]
+	path = /home/th3r00t/.emacs.d/site-lisp/emacs-application-framework
+	url = https://github.com/emacs-eaf/emacs-application-framework.git
+	branch = master
