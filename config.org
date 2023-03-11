@@ -13,7 +13,6 @@ Insert Source Block C-c C-,
 *** To Be Installed
 org-journal
 emacs application framework
-mu4e
 projectile
 *** Things to map
 magit
@@ -22,7 +21,6 @@ ag
 ** 2. Load Paths
 #+begin_src emacs-lisp
   (add-to-list 'load-path "/usr/share/emacs/site-lisp")
-  (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
 #+end_src
 ** Early Init
 #+begin_src emacs-lisp
@@ -383,7 +381,6 @@ https://www.orgroam.com/manual.html#Getting-Started
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src
 
-| (lambda nil (org-bullets-mode 1)) | org-indent-mode | evil-collection-mu4e-org-set-header-to-normal-mode | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | #<subr F616e6f6e796d6f75732d6c616d626461_anonymous_lambda_4> | (lambda nil evil-org-mode) | (lambda nil (evil-org-mode)) | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes |
 *** Org-Roam w\ Agenda
 #+begin_src emacs-lisp
   (defun vulpea-project-p ()
@@ -586,10 +583,6 @@ Configuration settings that adjust the user experience
   (menu-bar-mode 1)
   (scroll-bar-mode -1)
 #+end_src
-*** Line Numebers
-#+begin_src emacs-lisp
-  (global-display-line-numbers-mode)
-#+end_src
 *** Highlight Line
 #+begin_src emacs-lisp
   (global-hl-line-mode 1)
@@ -719,7 +712,6 @@ https://github.com/cofi/evil-leader
        :priority 89)
       (minor-modes :when active
                    :priority 9)
-      (mu4e-alert-segment :when active)
       (erc-track :when active)
       (version-control :when active
                        :priority 78)
@@ -890,7 +882,6 @@ https://github.com/cofi/evil-leader
   (set-frame-parameter nil 'alpha nil)
 #+end_src
 
-
 ** General Configurations
 *** Default Overrides
 **** yes-no
@@ -995,37 +986,36 @@ https://magit.vc/
 ** Development Plugins (General)
 *** Indent Handling
 #+begin_src emacs-lisp
-  ;;(use-package auto-indent-mode
-  ;;    :ensure t)
-  ;;(auto-indent-global-mode)
-  (electric-indent-mode 1)
-  ;;; Indentation for python
+;;(use-package auto-indent-mode
+;;    :ensure t)
+;;(auto-indent-global-mode)
+(electric-indent-mode 1)
+;; Indentation for python
+;; Ignoring electric indentation
+;; (defun electric-indent-ignore-python (char)
+;; "Ignore electric indentation for python-mode"
+;; (if (equal major-mode 'python-mode)
+;;     'no-indent
+;;   nil))
+;; (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
 
-  ;; Ignoring electric indentation
-  (defun electric-indent-ignore-python (char)
-    "Ignore electric indentation for python-mode"
-    ;; (if (equal major-mode 'python-mode)
-    ;;     'no-indent
-    ;;   nil))
-    ;; (add-hook 'electric-indent-functions 'electric-indent-ignore-python)
-
-  ;; Enter key executes newline-and-indent
-  (defun set-newline-and-indent ()
-    "Map the return key with `newline-and-indent'"
-    (local-set-key (kbd "RET") 'newline-and-indent))
-  (add-hook 'python-mode-hook 'set-newline-and-indent)
-  (dolist (command '(yank yank-pop))
-    (eval `(defadvice ,command (after indent-region activate)
-             (and (not current-prefix-arg)
-                  (member major-mode '(emacs-lisp-mode lisp-mode
-                                                       clojure-mode    scheme-mode
-                                                       haskell-mode    ruby-mode
-                                                       rspec-mode      python-mode
-                                                       c-mode          c++-mode
-                                                       objc-mode       latex-mode
-                                                       ))
-                  (let ((mark-even-if-inactive transient-mark-mode))
-                    (indent-region (region-beginning) (region-end) nil))))))
+;; Enter key executes newline-and-indent
+;; (defun set-newline-and-indent ()
+;; "Map the return key with `newline-and-indent'"
+;; (local-set-key (kbd "RET") 'newline-and-indent))
+;; (add-hook 'python-mode-hook 'set-newline-and-indent)
+;; (dolist (command '(yank yank-pop))
+;; (eval `(defadvice ,command (after indent-region activate)
+;;             (and (not current-prefix-arg)
+;;                 (member major-mode '(emacs-lisp-mode lisp-mode
+;;                                                     clojure-mode    scheme-mode
+;;                                                     haskell-mode    ruby-mode
+;;                                                     rspec-mode      python-mode
+;;                                                     c-mode          c++-mode
+;;                                                     objc-mode       latex-mode
+;;                                                     ))
+;;                 (let ((mark-even-if-inactive transient-mark-mode))
+;;                 (indent-region (region-beginning) (region-end) nil))))))
 #+end_src
 
 
@@ -1035,7 +1025,7 @@ https://magit.vc/
 #+end_src
 
 *** Lsp
-**** Install
+***** Install
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :ensure t
@@ -1048,7 +1038,7 @@ https://magit.vc/
     :commands lsp)
   (use-package lsp-ui :commands lsp-ui-mode :ensure t)
 #+end_src
-**** Configure
+***** Configure
 #+begin_src emacs-lisp
   (setq lsp-ui-sideline-show-diagnostics 1)
   (setq lsp-ui-sideline-show-hover t)
@@ -1112,11 +1102,20 @@ https://magit.vc/
                                        :console "external"
                                        :dap-compilation "cargo build"
                                        :dap-compilation-dir "${workspaceFolder}")))
-
+(dap-register-debug-template "Python :: PyMud"
+                             (list :type "python"
+                                   :args ""
+                                   :cwd "/home/th3r00t/.local/builds/pymud/"
+                                   :module "main"
+                                   :program nil
+                                   :request "launch"))
   (with-eval-after-load 'dap-mode
     (setq dap-default-terminal-kind "integrated") ;; Make sure that terminal programs open a term for I/O in an Emacs buffer
     (dap-auto-configure-mode +1))
 #+end_src
+
+#+RESULTS:
+: t
 
 #+begin_src emacs-lisp
   (dap-mode 1)
@@ -1398,6 +1397,13 @@ NOTE: these hooks runs in reverse order
   (add-to-list 'load-path "~/.emacs.d/tintin-mode")
   (require 'tintin-mode)
 #+end_src
+*** Sass
+#+begin_src emacs-lisp
+  (use-package sass-mode :ensure t)
+#+end_src
+
+#+RESULTS:
+
 ** Completion System
 *** Pop-up
 #+begin_src emacs-lisp
@@ -1654,7 +1660,6 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     "d x w" 'delete-trailing-whitespace)
 #+end_src
 
-
 ** Help System
 *** DevDocs
 #+begin_src emacs-lisp
@@ -1713,172 +1718,6 @@ https://github.com/kitnil/emacs-vterm-toggle
 *** shell-pop-el
 #+begin_src emacs-lisp
   (use-package shell-pop :ensure t)
-#+end_src
-
-
-** MU4E
-#+begin_src emacs-lisp
-  (require 'mu4e)
-#+end_src
-*** Multiple Account Configuration
-#+begin_src emacs-lisp
-  ;; assumed Maildir layout
-  ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
-  ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
-  ;; where Account0 is context name
-  (defun my-make-mu4e-context (context-name full-name mail-address signature)
-    "Return a mu4e context named CONTEXT-NAME with :match-func matching
-  folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
-  `user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
-  FULL-NAME and SIGNATURE respectively.
-  Special folders are set to context specific folders."
-    (let ((dir-name (concat "/" context-name)))
-      (make-mu4e-context
-       :name context-name
-       ;; we match based on the maildir of the message
-       ;; this matches maildir /Arkham and its sub-directories
-       :match-func
-       `(lambda (msg)
-          (when msg
-            (string-match-p
-             ,(concat "^" dir-name)
-             (mu4e-message-field msg :maildir))))
-       :vars
-       `((user-mail-address    . ,mail-address)
-         (user-full-name       . ,full-name)
-         (mu4e-sent-folder     . ,(concat dir-name "/Sent"))
-         (mu4e-drafts-folder   . ,(concat dir-name "/Drafts"))
-         (mu4e-trash-folder    . ,(concat dir-name "/Trash"))
-         (mu4e-refile-folder   . ,(concat dir-name "/Archive"))
-         (mu4e-compose-signature . ,signature)))))
-  ;;Fixing duplicate UID errors when using mbsync and mu4e
-  (setq mu4e-change-filenames-when-moving t)
-  (setq mu4e-contexts
-        `(,(my-make-mu4e-context
-            "admin" "Raelon 'th3r00t' Masters" "admin@mylt.dev" "<a href=home.mylt.dev>th3r00t</a>"
-            )))
-#+end_src
-*** mbsync integration
-#+begin_src emacs-lisp
-  (setq mu4e-get-mail-command "mbsync -a")
-  ;; Most of the time, I merely want mu4e to re-index my local maildir (because
-  ;; I'm running mbsync as a cron job). However, sometimes I want to fetch mails
-  ;; immediately. Do this by changing the meaning of a prefix for
-  ;; mu4e-update-mail-and-index (bound to "U").
-  ;;
-  ;; A prefix usually means run in the background, but I don't think I ever want
-  ;; that. Change things so a prefix means to call mbsync.
-  (defun my/mu4e-update-mail-and-index (orig-fun prefix &rest args)
-    (interactive "P")
-    (if prefix (funcall orig-fun nil) (mu4e-update-index)))
-  (advice-add 'mu4e-update-mail-and-index
-              :around #'my/mu4e-update-mail-and-index)
-  ;;Fixing duplicate UID errors when using mbsync and mu4e
-  (setq mu4e-change-filenames-when-moving t)
-#+end_src
-
-*** mu4e-alert
-#+begin_src emacs-lisp
-  (use-package mu4e-alert
-    :ensure t
-    :after mu4e
-    :init
-    (setq mu4e-alert-interesting-mail-query
-          (concat
-           "flag:unread maildir:/admin@mylt.dev/inbox "
-           ))
-    (mu4e-alert-enable-mode-line-display)
-    (defun gjstein-refresh-mu4e-alert-mode-line ()
-      (interactive)
-      (mu4e-kill-update-mail)
-      (mu4e-alert-enable-mode-line-display)
-      )
-    (run-with-timer 0 60 'gjstein-refresh-mu4e-alert-mode-line)
-    )
-#+end_src
-Alert for multiple email accounts
-#+begin_src emacs-lisp
-  (setq mu4e-alert-interesting-mail-query
-    (concat
-     "flag:unread maildir:/admin@mylt.dev/inbox "
-     "or "
-     "flag:unread maildir:/gmail/inbox"
-     ))
-#+end_src
-*** sending mail
-#+begin_src emacs-lisp
-  ;; I have my "default" parameters from Gmail
-  (setq mu4e-sent-folder "/home/th3r00t/.local/share/mail/admin/Sent"
-        ;; mu4e-sent-messages-behavior 'delete ;; Unsure how this should be configured
-        mu4e-drafts-folder "/home/th3r00t/.local/share/mail/admin/Drafts"
-        user-mail-address "admin@mylt.dev"
-        smtpmail-default-smtp-server "smtp.office365.com"
-        smtpmail-smtp-server "smtp.office365.com"
-        smtpmail-smtp-service 587)
-
-  ;; Now I set a list of
-  (defvar my-mu4e-account-alist
-    '(("Admin"
-       (mu4e-sent-folder "/admin/Sent")
-       (user-mail-address "admin@mylt.dev")
-       (smtpmail-smtp-user "admin@mylt.dev")
-       (smtpmail-local-domain "mylt.dev")
-       (smtpmail-default-smtp-server "smtp.office365.com")
-       (smtpmail-smtp-server "smtp.office365.com")
-       (smtpmail-smtp-service 587)
-       )
-      ;; Include any other accounts here ...
-      ))
-
-  (defun my-mu4e-set-account ()
-    "Set the account for composing a message.
-     This function is taken from:
-       https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
-    (let* ((account
-            (if mu4e-compose-parent-message
-                (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
-                  (string-match "/\\(.*?\\)/" maildir)
-                  (match-string 1 maildir))
-              (completing-read (format "Compose with account: (%s) "
-                                       (mapconcat #'(lambda (var) (car var))
-                                                  my-mu4e-account-alist "/"))
-                               (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
-                               nil t nil nil (caar my-mu4e-account-alist))))
-           (account-vars (cdr (assoc account my-mu4e-account-alist))))
-      (if account-vars
-          (mapc #'(lambda (var)
-                    (set (car var) (cadr var)))
-                account-vars)
-        (error "No email account found"))))
-  (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
-#+end_src
-*** Avoid trash on delete
-#+begin_src emacs-lisp
-  (defun remove-nth-element (nth list)
-  (if (zerop nth) (cdr list)
-    (let ((last (nthcdr (1- nth) list)))
-      (setcdr last (cddr last))
-      list)))
-(setq mu4e-marks (remove-nth-element 5 mu4e-marks))
-(add-to-list 'mu4e-marks
-     '(trash
-       :char ("d" . "▼")
-       :prompt "dtrash"
-       :dyn-target (lambda (target msg) (mu4e-get-trash-folder msg))
-       :action (lambda (docid msg target)
-                 (mu4e~proc-move docid
-                    (mu4e~mark-check-target target) "-N"))))
-#+end_src
-*** Random Tweaks
-#+begin_src emacs-lisp
-  ;; This allows me to use 'helm' to select mailboxes
-  (setq mu4e-completing-read-function 'completing-read)
-  ;; Why would I want to leave my message open after I've sent it?
-  (setq message-kill-buffer-on-exit t)
-  ;; Don't ask for a 'context' upon opening mu4e
-  (setq mu4e-context-policy 'pick-first)
-  ;; Don't ask to quit... why is this the default?
-  (setq mu4e-confirm-quit nil)
 #+end_src
 
 ** Reddit
@@ -2274,7 +2113,7 @@ Configure ERC
   (setq erc-autojoin-channels-alist
         '(("freenode.net" "#emacs" "#archlinux" "#python" "#linux" "#selfhosted")
           ("anonops.com" "#python" "#linux" "#anonops" "#bots" "#networking" "#programmers" "#OpSec" "#hackers" "#blackhats" "#radioanonops")))
-  
+
 #+end_src
 *** ERC Logging
 #+begin_src emacs-lisp
@@ -2448,12 +2287,6 @@ Configure ERC
   (use-package pyenv-mode :ensure t)
   (pyenv-mode)
 #+end_src
-** 
-
-** 
-
-* 
-
 * Custom Functions
 *** Org goto project todo
 #+begin_src emacs-lisp
@@ -2490,9 +2323,6 @@ Configure ERC
     )
 #+end_src
 
-*** Kill Journal Buffer
-#+begin_src emacs-lisp
-#+end_src
 *** helm/functions
 **** helm/eselect-grep
 #+begin_src emacs-lisp
@@ -2545,10 +2375,12 @@ Configure ERC
         (message "[%s]" (which-function)))))
 #+end_src
 **** helm-find-files-in-frame
-(defun helm-find-files-in-frame ()
-(interactive)
-(with-helm-in-frame
-(call-interactively #'helm-find-files)))
+#+begin_src emacs-lisp
+  (defun helm-find-files-in-frame ()
+    (interactive)
+    (with-helm-in-frame
+      (call-interactively #'helm-find-files)))
+#+end_src
 **** helm-M-x-in-frame
 #+begin_src emacs-lisp
   (defun helm-M-x-in-frame ()
@@ -2720,6 +2552,4 @@ Configure ERC
 #+begin_src emacs-lisp
   (eval-after-load "org"
     '(require 'ox-gfm nil t))
-  
 #+end_src
-
