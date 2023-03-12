@@ -1602,6 +1602,7 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-; m s") 'emms-stop)
   (global-set-key (kbd "C-; m S") 'emms-start)
   (global-set-key (kbd "C-; d") 'insert-date)
+  (global-set-key (kbd "C-; C-;") 'vterm-toggle-cd)
   (global-set-key (kbd "C-; e") '("ERC" . (keymap)))
   (global-set-key (kbd "C-; e a") '("Select Active Buffer" . erc-track-switch-buffer))
   (global-set-key (kbd "C-; e b") '("Select Buffer" . erc-switch-to-buffer))
@@ -1609,7 +1610,6 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
   (global-set-key (kbd "C-; e c a") '("irc.anonops.com" . t3/irc/anon))
   (global-set-key (kbd "C-; e c f") '("irc.freenode.net" . t3/irc/freenode))
   ;; (global-set-key (kbd "M-`") 'shell-pop)
-  (global-set-key (kbd "M-`") 'vterm-toggle)
   (define-key yas-minor-mode-map (kbd "C-SPC") yas-maybe-expand)
   (evil-leader/set-key
     "b" '("Buffers" . (keymap))
@@ -1660,6 +1660,8 @@ https://shom.dev/posts/20211122_emacs-which-key-prefix-labels/
     "d x w" 'delete-trailing-whitespace)
 #+end_src
 
+#+RESULTS:
+
 ** Help System
 *** DevDocs
 #+begin_src emacs-lisp
@@ -1704,16 +1706,26 @@ https://github.com/kitnil/emacs-vterm-toggle
 **** Show buffer in bottom side
 #+begin_src emacs-lisp
   (setq vterm-toggle-fullscreen-p nil)
-  (add-to-list 'display-buffer-alist
-               '("^v?term.*"
-                 (display-buffer-reuse-window display-buffer-at-bottom)
-                 ;;(display-buffer-reuse-window display-buffer-in-direction)
-                 ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-                 (direction . bottom)
-                 (dedicated . t) ;dedicated is supported in emacs27
-                 (reusable-frames . visible)
-                 (window-height . 0.15)))
+(add-to-list 'display-buffer-alist
+             '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (with-current-buffer buffer
+                       (or (equal major-mode 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                (display-buffer-reuse-window display-buffer-at-bottom)
+                ;;(display-buffer-reuse-window display-buffer-in-direction)
+                ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+                ;;(direction . bottom)
+                ;;(dedicated . t) ;dedicated is supported in emacs27
+                (reusable-frames . visible)
+                (window-height . 0.3)))
 #+end_src
+
+#+RESULTS:
+| (lambda (buffer-or-name _) (let ((buffer (get-buffer buffer-or-name))) (with-current-buffer buffer (or (equal major-mode 'vterm-mode) (string-prefix-p vterm-buffer-name (buffer-name buffer)))))) | (display-buffer-reuse-window display-buffer-at-bottom) | (reusable-frames . visible)                               | (window-height . 0.3) |                             |                                                                         |                        |
+| ^v?term.*                                                                                                                                                                                          | (display-buffer-reuse-window display-buffer-at-bottom) | (display-buffer-reuse-window display-buffer-in-direction) | (direction . bottom)  | (dedicated . t)             | (reusable-frames . visible)                                             | (window-height . 0.15) |
+| ^v?term.*                                                                                                                                                                                          | (display-buffer-reuse-window display-buffer-at-bottom) | (direction . bottom)                                      | (dedicated . t)       | (reusable-frames . visible) | (window-height . 0.15)                                                  |                        |
+| \*org-roam\*                                                                                                                                                                                       | (display-buffer-in-side-window)                        | (side . right)                                            | (slot . 0)            | (window-width . 0.33)       | (window-parameters (no-other-window . t) (no-delete-other-windows . t)) |                        |
 
 *** shell-pop-el
 #+begin_src emacs-lisp
